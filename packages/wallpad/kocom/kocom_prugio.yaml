@@ -1060,9 +1060,6 @@ button:
 
 # 전역 변수 - 스캐너 카운터용
 globals:
-  - id: ultra_scanner_counter
-    type: int
-    initial_value: "0"
   - id: temp_scanner_counter
     type: int
     initial_value: "0"
