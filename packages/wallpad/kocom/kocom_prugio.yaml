@@ -43,7 +43,7 @@ uartex:
   log:
     disabled: False
 
-# ESPHome 로그 레벨 설정
+# 로그 설정 - 디버깅용
 logger:
   level: DEBUG
   logs:
@@ -51,7 +51,7 @@ logger:
     uartex: DEBUG
 
 light:
-  # 거실 (Room 0) - 실제로는 거실
+  # 거실 조명 (Room 0)
   - platform: uartex
     name: "Living Room Light 1"
     id: living_room_light_1
@@ -90,7 +90,7 @@ light:
       uint8_t light1 = id(living_room_light_1).current_values.is_on() ? 0xff : 0x00;
       return {{0x30, 0xbc, 0x00, 0x0e, 0x00, 0x01, 0x00, 0x00, light1, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, {0x30, 0xdc}};
 
-  # 안방 (Room 1) - 실제로는 안방
+  # 안방 조명 (Room 1)
   - platform: uartex
     name: "Master Bedroom Light 1"
     id: master_bedroom_light_1
@@ -129,7 +129,7 @@ light:
       uint8_t light1 = id(master_bedroom_light_1).current_values.is_on() ? 0xff : 0x00;
       return {{0x30, 0xbc, 0x00, 0x0e, 0x01, 0x01, 0x00, 0x00, light1, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, {0x30, 0xdc}};
 
-  # 안방화장실 (Room 2) - 실제로는 안방화장실
+  # 안방화장실 조명 (Room 2)
   - platform: uartex
     name: "Master Bathroom Light"
     id: master_bathroom_light
@@ -185,10 +185,10 @@ light:
         ]
       ack: [0x30, 0xdc]
 
-  # 아이방 (Room 3)
+  # 아이방 조명 (Room 3)
   - platform: uartex
-    name: "Kids Room Light 1"
-    id: kids_room_light_1
+    name: "Kids Room Light"
+    id: kids_room_light
     state:
       data: [0x30, 0xd0, 0x00, 0x0e, 0x03]
       mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
@@ -198,36 +198,53 @@ light:
     state_off:
       offset: 8
       data: [0x00]
-    command_on: !lambda |-
-      uint8_t light2 = id(kids_room_light_2).current_values.is_on() ? 0xff : 0x00;
-      return {{0x30, 0xbc, 0x00, 0x0e, 0x03, 0x01, 0x00, 0x00, 0xff, light2, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, {0x30, 0xdc}};
-    command_off: !lambda |-
-      uint8_t light2 = id(kids_room_light_2).current_values.is_on() ? 0xff : 0x00;
-      return {{0x30, 0xbc, 0x00, 0x0e, 0x03, 0x01, 0x00, 0x00, 0x00, light2, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, {0x30, 0xdc}};
+    command_on:
+      data:
+        [
+          0x30,
+          0xbc,
+          0x00,
+          0x0e,
+          0x03,
+          0x01,
+          0x00,
+          0x00,
+          0xff,
+          0x00,
+          0x00,
+          0x00,
+          0x00,
+          0x00,
+          0x00,
+          0x00,
+        ]
+      ack: [0x30, 0xdc]
+    command_off:
+      data:
+        [
+          0x30,
+          0xbc,
+          0x00,
+          0x0e,
+          0x03,
+          0x01,
+          0x00,
+          0x00,
+          0x00,
+          0x00,
+          0x00,
+          0x00,
+          0x00,
+          0x00,
+          0x00,
+          0x00,
+        ]
+      ack: [0x30, 0xdc]
 
+  # 옷방 조명 (Room 4)
   - platform: uartex
-    name: "Kids Room Light 2"
-    id: kids_room_light_2
-    state:
-      data: [0x30, 0xd0, 0x00, 0x0e, 0x03]
-      mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
-    state_on:
-      offset: 9
-      data: [0xff]
-    state_off:
-      offset: 9
-      data: [0x00]
-    command_on: !lambda |-
-      uint8_t light1 = id(kids_room_light_1).current_values.is_on() ? 0xff : 0x00;
-      return {{0x30, 0xbc, 0x00, 0x0e, 0x03, 0x01, 0x00, 0x00, light1, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, {0x30, 0xdc}};
-    command_off: !lambda |-
-      uint8_t light1 = id(kids_room_light_1).current_values.is_on() ? 0xff : 0x00;
-      return {{0x30, 0xbc, 0x00, 0x0e, 0x03, 0x01, 0x00, 0x00, light1, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, {0x30, 0xdc}};
-
-  # 옷방 (Room 4)
-  - platform: uartex
-    name: "Dressing Room Light 1"
-    id: dressing_room_light_1
+    name: "Dressing Room Light"
+    id: dressing_room_light
     state:
       data: [0x30, 0xd0, 0x00, 0x0e, 0x04]
       mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
@@ -237,33 +254,50 @@ light:
     state_off:
       offset: 8
       data: [0x00]
-    command_on: !lambda |-
-      uint8_t light2 = id(dressing_room_light_2).current_values.is_on() ? 0xff : 0x00;
-      return {{0x30, 0xbc, 0x00, 0x0e, 0x04, 0x01, 0x00, 0x00, 0xff, light2, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, {0x30, 0xdc}};
-    command_off: !lambda |-
-      uint8_t light2 = id(dressing_room_light_2).current_values.is_on() ? 0xff : 0x00;
-      return {{0x30, 0xbc, 0x00, 0x0e, 0x04, 0x01, 0x00, 0x00, 0x00, light2, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, {0x30, 0xdc}};
+    command_on:
+      data:
+        [
+          0x30,
+          0xbc,
+          0x00,
+          0x0e,
+          0x04,
+          0x01,
+          0x00,
+          0x00,
+          0xff,
+          0x00,
+          0x00,
+          0x00,
+          0x00,
+          0x00,
+          0x00,
+          0x00,
+        ]
+      ack: [0x30, 0xdc]
+    command_off:
+      data:
+        [
+          0x30,
+          0xbc,
+          0x00,
+          0x0e,
+          0x04,
+          0x01,
+          0x00,
+          0x00,
+          0x00,
+          0x00,
+          0x00,
+          0x00,
+          0x00,
+          0x00,
+          0x00,
+          0x00,
+        ]
+      ack: [0x30, 0xdc]
 
-  - platform: uartex
-    name: "Dressing Room Light 2"
-    id: dressing_room_light_2
-    state:
-      data: [0x30, 0xd0, 0x00, 0x0e, 0x04]
-      mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
-    state_on:
-      offset: 9
-      data: [0xff]
-    state_off:
-      offset: 9
-      data: [0x00]
-    command_on: !lambda |-
-      uint8_t light1 = id(dressing_room_light_1).current_values.is_on() ? 0xff : 0x00;
-      return {{0x30, 0xbc, 0x00, 0x0e, 0x04, 0x01, 0x00, 0x00, light1, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, {0x30, 0xdc}};
-    command_off: !lambda |-
-      uint8_t light1 = id(dressing_room_light_1).current_values.is_on() ? 0xff : 0x00;
-      return {{0x30, 0xbc, 0x00, 0x0e, 0x04, 0x01, 0x00, 0x00, light1, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, {0x30, 0xdc}};
-
-  # 거실화장실 (Room 5)
+  # 거실화장실 조명 (Room 5)
   - platform: uartex
     name: "Guest Bathroom Light"
     id: guest_bathroom_light
@@ -319,7 +353,7 @@ light:
         ]
       ack: [0x30, 0xdc]
 
-  # 주방 (Room 6) - 실제로는 주방
+  # 주방 조명 (Room 6)
   - platform: uartex
     name: "Kitchen Light 1"
     id: kitchen_light_1
@@ -681,9 +715,219 @@ button:
         ]
       ack: [0x30, 0xdc]
 
-  # 확장된 스캔 기능 - 더 많은 패킷 찾기
+  # 일괄소등 스위치 (0x3B 디바이스 - 실제 발견!)
+  - platform: uartex
+    name: "All Lights Off"
+    icon: "mdi:lightbulb-group-off"
+    command_on:
+      data:
+        [
+          0x30,
+          0xbc,
+          0x00,
+          0x3b,
+          0x00,
+          0x01,
+          0x00,
+          0x00,
+          0xff,
+          0xff,
+          0x00,
+          0x00,
+          0x00,
+          0x00,
+          0x00,
+          0x00,
+        ]
+      ack: [0x30, 0xdc]
+
+  # 전체 환기 시스템 전용 스캔
   - platform: template
-    name: "Extended Scan All"
+    name: "Scan Ventilation System"
+    icon: "mdi:air-filter"
+    on_press:
+      # 전체 환기 시스템 스캔 (다양한 패턴)
+      - uartex.write:
+          data:
+            [
+              0x30,
+              0xbc,
+              0x00,
+              0x48,
+              0x00,
+              0x00,
+              0x00,
+              0x3a,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+            ]
+          ack: [0x30, 0xdc]
+      - delay: 500ms
+      - uartex.write:
+          data:
+            [
+              0x30,
+              0xbc,
+              0x00,
+              0x48,
+              0xff,
+              0x01,
+              0x00,
+              0x3a,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+            ]
+          ack: [0x30, 0xdc]
+      - delay: 500ms
+      - uartex.write:
+          data:
+            [
+              0x30,
+              0xbc,
+              0x00,
+              0x49,
+              0x00,
+              0x01,
+              0x00,
+              0x3a,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+            ]
+          ack: [0x30, 0xdc]
+      - delay: 500ms
+      - uartex.write:
+          data:
+            [
+              0x30,
+              0xbc,
+              0x00,
+              0x4a,
+              0x00,
+              0x01,
+              0x00,
+              0x3a,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+            ]
+          ack: [0x30, 0xdc]
+      - delay: 500ms
+      # 전체 환기 (Room FF)
+      - uartex.write:
+          data:
+            [
+              0x30,
+              0xbc,
+              0x00,
+              0x48,
+              0xff,
+              0x00,
+              0x00,
+              0x3a,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+            ]
+          ack: [0x30, 0xdc]
+      - delay: 500ms
+      # 환기 단계 조절 (다른 Command 코드들)
+      - uartex.write:
+          data:
+            [
+              0x30,
+              0xbc,
+              0x00,
+              0x48,
+              0x00,
+              0x01,
+              0x00,
+              0x01,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+            ]
+          ack: [0x30, 0xdc]
+      - delay: 500ms
+      - uartex.write:
+          data:
+            [
+              0x30,
+              0xbc,
+              0x00,
+              0x48,
+              0x00,
+              0x01,
+              0x00,
+              0x02,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+            ]
+          ack: [0x30, 0xdc]
+      - delay: 500ms
+      - uartex.write:
+          data:
+            [
+              0x30,
+              0xbc,
+              0x00,
+              0x48,
+              0x00,
+              0x01,
+              0x00,
+              0x03,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+            ]
+          ack: [0x30, 0xdc]
+
+  # 🔍 고급 스캔 기능 - 모든 디바이스 탐지
+  - platform: template
+    name: "Advanced Device Scanner"
     icon: "mdi:radar"
     on_press:
       # 조명 스캔 (Room 0-10까지 확장)
@@ -1285,28 +1529,399 @@ button:
             ]
           ack: [0x30, 0xdc]
 
-  # 일괄소등 버튼 (추가 테스트)
-  - platform: uartex
-    name: "All Lights Off"
-    icon: "mdi:lightbulb-group-off"
-    command_on:
-      data:
-        [
-          0x30,
-          0xbc,
-          0x00,
-          0x01,
-          0x00,
-          0x01,
-          0x00,
-          0x01,
-          0x00,
-          0x00,
-          0x00,
-          0x00,
-          0x00,
-          0x00,
-          0x00,
-          0x00,
-        ]
-      ack: [0x30, 0xdc]
+  # 🔍 초고속 전체 디바이스 스캐너 - 모든 가능한 조합 탐지
+  - platform: template
+    name: "Ultra Device Scanner"
+    icon: "mdi:magnify-scan"
+    on_press:
+      # 1단계: 알려진 디바이스 코드들 스캔 (0x01-0xFF)
+      - repeat:
+          count: 15
+          then:
+            - uartex.write:
+                data: !lambda |-
+                  uint8_t device_codes[] = {0x01, 0x0e, 0x2c, 0x36, 0x3b, 0x44, 0x48, 0x49, 0x4a, 0x50, 0x60, 0x70, 0x80, 0x90, 0xa0};
+                  uint8_t device = device_codes[id(ultra_scanner_counter) % 15];
+                  uint8_t room = id(ultra_scanner_counter) / 15;
+                  return {0x30, 0xbc, 0x00, device, room, 0x01, 0x00, 0x3a, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+                ack: [0x30, 0xdc]
+            - delay: 200ms
+            - globals.set:
+                id: ultra_scanner_counter
+                value: !lambda "return id(ultra_scanner_counter) + 1;"
+
+  # 🌡️ 온도/습도 센서 전용 스캐너
+  - platform: template
+    name: "Temperature Sensor Scanner"
+    icon: "mdi:thermometer-lines"
+    on_press:
+      # 온도 센서 가능 디바이스 코드들
+      - uartex.write:
+          data:
+            [
+              0x30,
+              0xbc,
+              0x00,
+              0x30,
+              0x00,
+              0x01,
+              0x00,
+              0x3a,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+            ]
+          ack: [0x30, 0xdc]
+      - delay: 300ms
+      - uartex.write:
+          data:
+            [
+              0x30,
+              0xbc,
+              0x00,
+              0x31,
+              0x00,
+              0x01,
+              0x00,
+              0x3a,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+            ]
+          ack: [0x30, 0xdc]
+      - delay: 300ms
+      - uartex.write:
+          data:
+            [
+              0x30,
+              0xbc,
+              0x00,
+              0x32,
+              0x00,
+              0x01,
+              0x00,
+              0x3a,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+            ]
+          ack: [0x30, 0xdc]
+      - delay: 300ms
+      - uartex.write:
+          data:
+            [
+              0x30,
+              0xbc,
+              0x00,
+              0x33,
+              0x00,
+              0x01,
+              0x00,
+              0x3a,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+            ]
+          ack: [0x30, 0xdc]
+      - delay: 300ms
+      - uartex.write:
+          data:
+            [
+              0x30,
+              0xbc,
+              0x00,
+              0x34,
+              0x00,
+              0x01,
+              0x00,
+              0x3a,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+            ]
+          ack: [0x30, 0xdc]
+      - delay: 300ms
+      - uartex.write:
+          data:
+            [
+              0x30,
+              0xbc,
+              0x00,
+              0x35,
+              0x00,
+              0x01,
+              0x00,
+              0x3a,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+            ]
+          ack: [0x30, 0xdc]
+
+  # 🚪 도어락/보안 시스템 스캐너
+  - platform: template
+    name: "Security System Scanner"
+    icon: "mdi:shield-lock"
+    on_press:
+      # 보안 관련 디바이스 코드들
+      - uartex.write:
+          data:
+            [
+              0x30,
+              0xbc,
+              0x00,
+              0x50,
+              0x00,
+              0x01,
+              0x00,
+              0x3a,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+            ]
+          ack: [0x30, 0xdc]
+      - delay: 300ms
+      - uartex.write:
+          data:
+            [
+              0x30,
+              0xbc,
+              0x00,
+              0x51,
+              0x00,
+              0x01,
+              0x00,
+              0x3a,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+            ]
+          ack: [0x30, 0xdc]
+      - delay: 300ms
+      - uartex.write:
+          data:
+            [
+              0x30,
+              0xbc,
+              0x00,
+              0x52,
+              0x00,
+              0x01,
+              0x00,
+              0x3a,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+            ]
+          ack: [0x30, 0xdc]
+      - delay: 300ms
+      - uartex.write:
+          data:
+            [
+              0x30,
+              0xbc,
+              0x00,
+              0x60,
+              0x00,
+              0x01,
+              0x00,
+              0x3a,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+            ]
+          ack: [0x30, 0xdc]
+      - delay: 300ms
+      - uartex.write:
+          data:
+            [
+              0x30,
+              0xbc,
+              0x00,
+              0x61,
+              0x00,
+              0x01,
+              0x00,
+              0x3a,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+            ]
+          ack: [0x30, 0xdc]
+
+  # 🔌 전력/콘센트 제어 스캐너
+  - platform: template
+    name: "Power Control Scanner"
+    icon: "mdi:power-socket"
+    on_press:
+      # 전력 제어 관련 디바이스들
+      - uartex.write:
+          data:
+            [
+              0x30,
+              0xbc,
+              0x00,
+              0x70,
+              0x00,
+              0x01,
+              0x00,
+              0x3a,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+            ]
+          ack: [0x30, 0xdc]
+      - delay: 300ms
+      - uartex.write:
+          data:
+            [
+              0x30,
+              0xbc,
+              0x00,
+              0x71,
+              0x00,
+              0x01,
+              0x00,
+              0x3a,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+            ]
+          ack: [0x30, 0xdc]
+      - delay: 300ms
+      - uartex.write:
+          data:
+            [
+              0x30,
+              0xbc,
+              0x00,
+              0x72,
+              0x00,
+              0x01,
+              0x00,
+              0x3a,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+            ]
+          ack: [0x30, 0xdc]
+      - delay: 300ms
+      - uartex.write:
+          data:
+            [
+              0x30,
+              0xbc,
+              0x00,
+              0x80,
+              0x00,
+              0x01,
+              0x00,
+              0x3a,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+            ]
+          ack: [0x30, 0xdc]
+      - delay: 300ms
+      - uartex.write:
+          data:
+            [
+              0x30,
+              0xbc,
+              0x00,
+              0x81,
+              0x00,
+              0x01,
+              0x00,
+              0x3a,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+            ]
+          ack: [0x30, 0xdc]
+
+# 전역 변수 - 스캐너 카운터용
+globals:
+  - id: ultra_scanner_counter
+    type: int
+    initial_value: "0"
