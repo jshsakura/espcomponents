@@ -8,11 +8,14 @@ uart:
   tx_pin: GPIO19
   debug:
     direction: BOTH
-    dummy_receiver: true
+    dummy_receiver: false
     after:
-      delimiter: "\r\r"
+      delimiter: [0x0D, 0x0D]
     sequence:
-      - lambda: UARTDebug::log_string(direction, bytes);
+      - lambda: |-
+          ESP_LOGI("uart_debug", "Direction: %s, Bytes: %s", 
+            direction == uart::UART_DIRECTION_RX ? "RX" : "TX",
+            format_hex_pretty(bytes).c_str());
 
 external_components:
   - source: github://eigger/espcomponents@latest
@@ -198,7 +201,7 @@ light:
     name: "Kitchen Light 1"
     id: kitchen_light_1
     state:
-      data: [0x30, 0xd0, 0x00, 0x0e, 0x02]
+      data: [0x30, 0xdd, 0x00, 0x0e, 0x02]
       mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
     state_on:
       offset: 8
@@ -217,7 +220,7 @@ light:
     name: "Kitchen Light 2"
     id: kitchen_light_2
     state:
-      data: [0x30, 0xd0, 0x00, 0x0e, 0x02]
+      data: [0x30, 0xdd, 0x00, 0x0e, 0x02]
       mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
     state_on:
       offset: 9
@@ -315,7 +318,7 @@ light:
     name: "Guest Bathroom Light"
     id: guest_bathroom_light
     state:
-      data: [0x30, 0xd0, 0x00, 0x0e, 0x05]
+      data: [0x30, 0xdd, 0x00, 0x0e, 0x05]
       mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
     state_on:
       offset: 8
@@ -371,7 +374,7 @@ light:
     name: "Master Bathroom Light"
     id: master_bathroom_light
     state:
-      data: [0x30, 0xd0, 0x00, 0x0e, 0x06]
+      data: [0x30, 0xdd, 0x00, 0x0e, 0x06]
       mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
     state_on:
       offset: 8
