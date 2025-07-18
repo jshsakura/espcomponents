@@ -1,10 +1,18 @@
 uart:
+  id: uart_bus
   baud_rate: 9600
   data_bits: 8
   parity: NONE
   stop_bits: 1
   rx_pin: GPIO22
   tx_pin: GPIO19
+  debug:
+    direction: BOTH
+    dummy_receiver: true
+    after:
+      delimiter: "\r\r"
+    sequence:
+      - lambda: UARTDebug::log_string(direction, bytes);
 
 external_components:
   - source: github://eigger/espcomponents@latest
@@ -32,22 +40,36 @@ uartex:
   log:
     disabled: False
 
+# ESPHome 로그 레벨 설정
+logger:
+  level: VERBOSE
+  logs:
+    uartex: VERBOSE
+    uart: VERBOSE
+    component: DEBUG
+
 # 디버깅을 위한 로그 센서 추가
 text_sensor:
   - platform: uartex
-    name: "Raw Packet Log"
-    icon: "mdi:bug"
+    name: "Packet Counter"
+    icon: "mdi:counter"
     state:
       data: [0xAA, 0x55]
       mask: [0xFF, 0xFF]
     lambda: |-
-      std::string hex_string = "";
-      for (int i = 0; i < len; i++) {
-        char hex_char[4];
-        sprintf(hex_char, "%02X ", data[i]);
-        hex_string += hex_char;
-      }
-      return hex_string;
+      static int packet_count = 0;
+      packet_count++;
+      ESP_LOGI("uartex", "Packet received #%d, length: %d", packet_count, len);
+      return {"Packet #" + std::to_string(packet_count)};
+    update_interval: never
+
+  # 간단한 통신 테스트 센서
+  - platform: template
+    name: "UART Status"
+    icon: "mdi:serial-port"
+    lambda: |-
+      return {"UART Ready"};
+    update_interval: 10s
 
   - platform: uartex
     name: "Elevator Direction"
