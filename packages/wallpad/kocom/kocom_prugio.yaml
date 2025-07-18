@@ -1087,9 +1087,9 @@ button:
             ]
           ack: [0x30, 0xdc]
 
-  # 디버깅을 위한 스위치
+  # 디버깅용 버튼
   - platform: template
-    name: "Debug Mode"
+    name: "Debug Scan"
     icon: "mdi:bug"
-    optimistic: true
-    restore_mode: ALWAYS_OFF
+    on_press:
+      - logger.log: "Debug scan triggered"
