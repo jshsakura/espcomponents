@@ -6,6 +6,16 @@ uart:
   stop_bits: 1
   rx_pin: GPIO22
   tx_pin: GPIO19
+  debug:
+    direction: BOTH
+    dummy_receiver: false
+    after:
+      delimiter: [0x0D, 0x0D]
+    sequence:
+      - lambda: |-
+          ESP_LOGI("uart_debug", "Direction: %s, Bytes: %s", 
+            direction == uart::UART_DIRECTION_RX ? "RX" : "TX",
+            format_hex_pretty(bytes).c_str());
 
 external_components:
   - source: github://eigger/espcomponents@latest
@@ -32,6 +42,13 @@ uartex:
     disabled: False
   log:
     disabled: False
+
+# ESPHome 로그 레벨 설정
+logger:
+  level: DEBUG
+  logs:
+    uart_debug: DEBUG
+    uartex: DEBUG
 
 light:
   # 거실 (Room 0) - 실제로는 거실
