@@ -298,6 +298,7 @@ climate:
       min_temperature: 5 °C
       max_temperature: 30 °C
       temperature_step: 1 °C
+    default_target_temperature: 20 °C
     state:
       data: [0x30, 0xd0, 0x00, 0x36, 0x00]
       mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
@@ -323,11 +324,7 @@ climate:
     command_heat: !lambda |-
       float target = id(living_room_heater).target_temperature;
       return {{0x30, 0xbc, 0x00, 0x36, 0x00, 0x01, 0x00, 0x00, 0x11, 0x00, (uint8_t)target, 0x00, 0x00, 0x00, 0x00, 0x00},{0x30, 0xdc}};
-    command_temperature: !lambda |-
-      float target = x;
-      bool is_heating = id(living_room_heater).mode == climate::CLIMATE_MODE_HEAT;
-      uint8_t mode_byte = is_heating ? 0x11 : 0x00;
-      return {{0x30, 0xbc, 0x00, 0x36, 0x00, 0x01, 0x00, 0x00, mode_byte, 0x00, (uint8_t)target, 0x00, 0x00, 0x00, 0x00, 0x00},{0x30, 0xdc}};
+    # command_temperature 제거 - 자동 켜짐 방지
 
   # 안방 난방 (Room 1)
   - platform: uartex
@@ -337,6 +334,7 @@ climate:
       min_temperature: 5 °C
       max_temperature: 30 °C
       temperature_step: 1 °C
+    default_target_temperature: 20 °C
     state:
       data: [0x30, 0xd0, 0x00, 0x36, 0x01]
       mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
@@ -362,20 +360,17 @@ climate:
     command_heat: !lambda |-
       float target = id(master_bedroom_heater).target_temperature;
       return {{0x30, 0xbc, 0x00, 0x36, 0x01, 0x01, 0x00, 0x00, 0x11, 0x00, (uint8_t)target, 0x00, 0x00, 0x00, 0x00, 0x00},{0x30, 0xdc}};
-    command_temperature: !lambda |-
-      float target = x;
-      bool is_heating = id(master_bedroom_heater).mode == climate::CLIMATE_MODE_HEAT;
-      uint8_t mode_byte = is_heating ? 0x11 : 0x00;
-      return {{0x30, 0xbc, 0x00, 0x36, 0x01, 0x01, 0x00, 0x00, mode_byte, 0x00, (uint8_t)target, 0x00, 0x00, 0x00, 0x00, 0x00},{0x30, 0xdc}};
+    # command_temperature 제거 - 자동 켜짐 방지
 
-  # 아이방 난방 (Room 3)
+  # 옷방 난방 (Room 3)
   - platform: uartex
-    name: "Kids Room Heater"
-    id: kids_room_heater
+    name: "Room 2 Heater"
+    id: room2_heater
     visual:
       min_temperature: 5 °C
       max_temperature: 30 °C
       temperature_step: 1 °C
+    default_target_temperature: 20 °C
     state:
       data: [0x30, 0xd0, 0x00, 0x36, 0x03]
       mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
@@ -396,25 +391,21 @@ climate:
       data: [0x10]
       mask: [0xF0]
     command_off: !lambda |-
-      float target = id(kids_room_heater).target_temperature;
+      float target = id(room2_heater).target_temperature;
       return {{0x30, 0xbc, 0x00, 0x36, 0x03, 0x01, 0x00, 0x00, 0x01, 0x00, (uint8_t)target, 0x00, 0x00, 0x00, 0x00, 0x00},{0x30, 0xdc}};
     command_heat: !lambda |-
-      float target = id(kids_room_heater).target_temperature;
+      float target = id(room2_heater).target_temperature;
       return {{0x30, 0xbc, 0x00, 0x36, 0x03, 0x01, 0x00, 0x00, 0x11, 0x00, (uint8_t)target, 0x00, 0x00, 0x00, 0x00, 0x00},{0x30, 0xdc}};
-    command_temperature: !lambda |-
-      float target = x;
-      bool is_heating = id(kids_room_heater).mode == climate::CLIMATE_MODE_HEAT;
-      uint8_t mode_byte = is_heating ? 0x11 : 0x00;
-      return {{0x30, 0xbc, 0x00, 0x36, 0x03, 0x01, 0x00, 0x00, mode_byte, 0x00, (uint8_t)target, 0x00, 0x00, 0x00, 0x00, 0x00},{0x30, 0xdc}};
 
-  # 안방 팬트리 난방 (Room 2)
+  # 연우방 난방 (Room 2)
   - platform: uartex
-    name: "Pantry Heater"
-    id: pantry_heater
+    name: "Room 1 Heater"
+    id: room1_heater
     visual:
       min_temperature: 5 °C
       max_temperature: 30 °C
       temperature_step: 1 °C
+    default_target_temperature: 20 °C
     state:
       data: [0x30, 0xd0, 0x00, 0x36, 0x02]
       mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
@@ -435,55 +426,11 @@ climate:
       data: [0x10]
       mask: [0xF0]
     command_off: !lambda |-
-      float target = id(pantry_heater).target_temperature;
+      float target = id(room1_heater).target_temperature;
       return {{0x30, 0xbc, 0x00, 0x36, 0x02, 0x01, 0x00, 0x00, 0x01, 0x00, (uint8_t)target, 0x00, 0x00, 0x00, 0x00, 0x00},{0x30, 0xdc}};
     command_heat: !lambda |-
-      float target = id(pantry_heater).target_temperature;
+      float target = id(room1_heater).target_temperature;
       return {{0x30, 0xbc, 0x00, 0x36, 0x02, 0x01, 0x00, 0x00, 0x11, 0x00, (uint8_t)target, 0x00, 0x00, 0x00, 0x00, 0x00},{0x30, 0xdc}};
-    command_temperature: !lambda |-
-      float target = x;
-      bool is_heating = id(pantry_heater).mode == climate::CLIMATE_MODE_HEAT;
-      uint8_t mode_byte = is_heating ? 0x11 : 0x00;
-      return {{0x30, 0xbc, 0x00, 0x36, 0x02, 0x01, 0x00, 0x00, mode_byte, 0x00, (uint8_t)target, 0x00, 0x00, 0x00, 0x00, 0x00},{0x30, 0xdc}};
-
-  # 옷방 난방 (Room 4) - 개선된 설정
-  - platform: uartex
-    name: "Dressing Room Heater"
-    id: dressing_room_heater
-    visual:
-      min_temperature: 5 °C
-      max_temperature: 30 °C
-      temperature_step: 1 °C
-    state:
-      data: [0x30, 0xd0, 0x00, 0x36, 0x04]
-      mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
-    state_temperature_current:
-      offset: 12
-      length: 1
-      precision: 0
-    state_temperature_target:
-      offset: 10
-      length: 1
-      precision: 0
-    state_off:
-      offset: 8
-      data: [0x00]
-      mask: [0xF0]
-    state_heat:
-      offset: 8
-      data: [0x10]
-      mask: [0xF0]
-    command_off: !lambda |-
-      float target = id(dressing_room_heater).target_temperature;
-      return {{0x30, 0xbc, 0x00, 0x36, 0x04, 0x01, 0x00, 0x00, 0x01, 0x00, (uint8_t)target, 0x00, 0x00, 0x00, 0x00, 0x00},{0x30, 0xdc}};
-    command_heat: !lambda |-
-      float target = id(dressing_room_heater).target_temperature;
-      return {{0x30, 0xbc, 0x00, 0x36, 0x04, 0x01, 0x00, 0x00, 0x11, 0x00, (uint8_t)target, 0x00, 0x00, 0x00, 0x00, 0x00},{0x30, 0xdc}};
-    command_temperature: !lambda |-
-      float target = x;
-      bool is_heating = id(dressing_room_heater).mode == climate::CLIMATE_MODE_HEAT;
-      uint8_t mode_byte = is_heating ? 0x11 : 0x00;
-      return {{0x30, 0xbc, 0x00, 0x36, 0x04, 0x01, 0x00, 0x00, mode_byte, 0x00, (uint8_t)target, 0x00, 0x00, 0x00, 0x00, 0x00},{0x30, 0xdc}};
 
 valve:
   - platform: uartex
@@ -508,7 +455,7 @@ fan:
     name: "Whole House Ventilation"
     id: whole_house_ventilation
     state:
-      data: [0x30, 0xd0, 0x00, 0x48, 0x00]
+      data: [0x30, 0xdd, 0x00, 0x48, 0x00]
       mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
     state_off:
       offset: 8
