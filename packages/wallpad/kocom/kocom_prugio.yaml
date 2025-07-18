@@ -6,16 +6,6 @@ uart:
   stop_bits: 1
   rx_pin: GPIO22
   tx_pin: GPIO19
-  debug:
-    direction: BOTH
-    dummy_receiver: false
-    after:
-      delimiter: [0x0D, 0x0D]
-    sequence:
-      - lambda: |-
-          ESP_LOGI("uart_debug", "Direction: %s, Bytes: %s", 
-            direction == uart::UART_DIRECTION_RX ? "RX" : "TX",
-            format_hex_pretty(bytes).c_str());
 
 external_components:
   - source: github://eigger/espcomponents@latest
@@ -43,82 +33,8 @@ uartex:
   log:
     disabled: False
 
-# ESPHome 로그 레벨 설정
-logger:
-  level: VERBOSE
-  logs:
-    uartex: VERBOSE
-    uart: VERBOSE
-    component: DEBUG
-
-# 디버깅을 위한 로그 센서 추가
-text_sensor:
-  - platform: uartex
-    name: "Packet Counter"
-    icon: "mdi:counter"
-    state:
-      data: [0xAA, 0x55]
-      mask: [0xFF, 0xFF]
-    lambda: |-
-      static int packet_count = 0;
-      packet_count++;
-      ESP_LOGI("uartex", "Packet received #%d, length: %d", packet_count, len);
-      return {"Packet #" + std::to_string(packet_count)};
-    update_interval: never
-
-  # 간단한 통신 테스트 센서
-  - platform: template
-    name: "UART Status"
-    icon: "mdi:serial-port"
-    lambda: |-
-      return {"UART Ready"};
-    update_interval: 10s
-
-  - platform: uartex
-    name: "Elevator Direction"
-    icon: "mdi:elevator"
-    state:
-      data: [0x30, 0xd0, 0x00, 0x01, 0x00, 0x44, 0x00]
-      mask: [0xff, 0xf0, 0xff, 0xff, 0xff, 0xff, 0xff]
-    lambda: |-
-      if (check_value(8, 0x00, data, len)) return "정지";
-      if (check_value(8, 0x01, data, len)) return "하강";
-      if (check_value(8, 0x02, data, len)) return "상승";
-      if (check_value(8, 0x03, data, len)) return "도착";
-      return "Unknown";
-
-# 현관문 기능 (kocom_door.yaml에서 가져옴)
-binary_sensor:
-  - platform: uartex
-    id: door_bell
-    name: "Door Bell"
-    icon: "mdi:bell-ring"
-    state:
-      data: [0xAA, 0x55, 0x70, 0x90, 0x02, 0x02]
-      mask: [0xFF, 0xFF, 0xF0, 0xF0, 0xFF, 0xFF]
-    state_on:
-      offset: 15
-      data: [0x01]
-    state_off:
-      offset: 15
-      data: [0x02]
-
-  - platform: uartex
-    id: door_bell_common
-    name: "Door Bell Common"
-    icon: "mdi:bell-ring"
-    state:
-      data: [0xAA, 0x55, 0x70, 0x90, 0x02, 0x08]
-      mask: [0xFF, 0xFF, 0xF0, 0xF0, 0xFF, 0xFF]
-    state_on:
-      offset: 15
-      data: [0x01]
-    state_off:
-      offset: 15
-      data: [0x02]
-
 light:
-  # 안방 (Room 0) - 정상
+  # 안방 (Room 0)
   - platform: uartex
     name: "Master Bedroom Light 1"
     id: master_bedroom_light_1
@@ -157,7 +73,7 @@ light:
       uint8_t light1 = id(master_bedroom_light_1).current_values.is_on() ? 0xff : 0x00;
       return {{0x30, 0xbc, 0x00, 0x0e, 0x00, 0x01, 0x00, 0x00, light1, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, {0x30, 0xdc}};
 
-  # 거실 및 거실 복도 (Room 1) - 정상
+  # 거실 (Room 1)
   - platform: uartex
     name: "Living Room Light 1"
     id: living_room_light_1
@@ -196,7 +112,7 @@ light:
       uint8_t light1 = id(living_room_light_1).current_values.is_on() ? 0xff : 0x00;
       return {{0x30, 0xbc, 0x00, 0x0e, 0x01, 0x01, 0x00, 0x00, light1, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, {0x30, 0xdc}};
 
-  # 주방 (Room 2) - 2개 스위치 테스트
+  # 주방 (Room 2) - DD 패킷 사용
   - platform: uartex
     name: "Kitchen Light 1"
     id: kitchen_light_1
@@ -235,7 +151,7 @@ light:
       uint8_t light1 = id(kitchen_light_1).current_values.is_on() ? 0xff : 0x00;
       return {{0x30, 0xbc, 0x00, 0x0e, 0x02, 0x01, 0x00, 0x00, light1, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, {0x30, 0xdc}};
 
-  # 아이방 (Room 3) - 정상
+  # 아이방 (Room 3)
   - platform: uartex
     name: "Kids Room Light 1"
     id: kids_room_light_1
@@ -274,7 +190,7 @@ light:
       uint8_t light1 = id(kids_room_light_1).current_values.is_on() ? 0xff : 0x00;
       return {{0x30, 0xbc, 0x00, 0x0e, 0x03, 0x01, 0x00, 0x00, light1, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, {0x30, 0xdc}};
 
-  # 옷방 (Room 4) - 누락된 방 추가
+  # 옷방 (Room 4)
   - platform: uartex
     name: "Dressing Room Light 1"
     id: dressing_room_light_1
@@ -313,7 +229,7 @@ light:
       uint8_t light1 = id(dressing_room_light_1).current_values.is_on() ? 0xff : 0x00;
       return {{0x30, 0xbc, 0x00, 0x0e, 0x04, 0x01, 0x00, 0x00, light1, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, {0x30, 0xdc}};
 
-  # 거실화장실 (Room 5) - 조명 및 환기팬
+  # 거실화장실 (Room 5) - DD 패킷 사용
   - platform: uartex
     name: "Guest Bathroom Light"
     id: guest_bathroom_light
@@ -327,49 +243,13 @@ light:
       offset: 8
       data: [0x00]
     command_on:
-      data:
-        [
-          0x30,
-          0xbc,
-          0x00,
-          0x0e,
-          0x05,
-          0x01,
-          0x00,
-          0x00,
-          0xff,
-          0x00,
-          0x00,
-          0x00,
-          0x00,
-          0x00,
-          0x00,
-          0x00,
-        ]
+      data: [0x30, 0xbc, 0x00, 0x0e, 0x05, 0x01, 0x00, 0x00, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
       ack: [0x30, 0xdc]
     command_off:
-      data:
-        [
-          0x30,
-          0xbc,
-          0x00,
-          0x0e,
-          0x05,
-          0x01,
-          0x00,
-          0x00,
-          0x00,
-          0x00,
-          0x00,
-          0x00,
-          0x00,
-          0x00,
-          0x00,
-          0x00,
-        ]
+      data: [0x30, 0xbc, 0x00, 0x0e, 0x05, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
       ack: [0x30, 0xdc]
 
-  # 안방화장실 (Room 6) - 조명
+  # 안방화장실 (Room 6) - DD 패킷 사용
   - platform: uartex
     name: "Master Bathroom Light"
     id: master_bathroom_light
@@ -383,56 +263,19 @@ light:
       offset: 8
       data: [0x00]
     command_on:
-      data:
-        [
-          0x30,
-          0xbc,
-          0x00,
-          0x0e,
-          0x06,
-          0x01,
-          0x00,
-          0x00,
-          0xff,
-          0x00,
-          0x00,
-          0x00,
-          0x00,
-          0x00,
-          0x00,
-          0x00,
-        ]
+      data: [0x30, 0xbc, 0x00, 0x0e, 0x06, 0x01, 0x00, 0x00, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
       ack: [0x30, 0xdc]
     command_off:
-      data:
-        [
-          0x30,
-          0xbc,
-          0x00,
-          0x0e,
-          0x06,
-          0x01,
-          0x00,
-          0x00,
-          0x00,
-          0x00,
-          0x00,
-          0x00,
-          0x00,
-          0x00,
-          0x00,
-          0x00,
-        ]
+      data: [0x30, 0xbc, 0x00, 0x0e, 0x06, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
       ack: [0x30, 0xdc]
 
-# 환기팬 (Switch로 대체 - 일단 간단하게)
 switch:
-  # 거실화장실 환기팬
+  # 거실화장실 환기팬 - DD 패킷 사용
   - platform: uartex
     name: "Guest Bathroom Fan"
     id: guest_bathroom_fan
     state:
-      data: [0x30, 0xd0, 0x00, 0x48, 0x05]
+      data: [0x30, 0xdd, 0x00, 0x48, 0x05]
       mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
     state_on:
       offset: 8
@@ -441,54 +284,18 @@ switch:
       offset: 8
       data: [0x00]
     command_on:
-      data:
-        [
-          0x30,
-          0xbc,
-          0x00,
-          0x48,
-          0x05,
-          0x01,
-          0x00,
-          0x00,
-          0x11,
-          0x01,
-          0x40,
-          0x17,
-          0x00,
-          0x00,
-          0x00,
-          0x00,
-        ]
+      data: [0x30, 0xbc, 0x00, 0x48, 0x05, 0x01, 0x00, 0x00, 0x11, 0x01, 0x40, 0x17, 0x00, 0x00, 0x00, 0x00]
       ack: [0x30, 0xdc]
     command_off:
-      data:
-        [
-          0x30,
-          0xbc,
-          0x00,
-          0x48,
-          0x05,
-          0x01,
-          0x00,
-          0x00,
-          0x00,
-          0x01,
-          0x00,
-          0x17,
-          0x00,
-          0x00,
-          0x00,
-          0x00,
-        ]
+      data: [0x30, 0xbc, 0x00, 0x48, 0x05, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x17, 0x00, 0x00, 0x00, 0x00]
       ack: [0x30, 0xdc]
 
-  # 안방화장실 환기팬
+  # 안방화장실 환기팬 - DD 패킷 사용
   - platform: uartex
     name: "Master Bathroom Fan"
     id: master_bathroom_fan
     state:
-      data: [0x30, 0xd0, 0x00, 0x48, 0x06]
+      data: [0x30, 0xdd, 0x00, 0x48, 0x06]
       mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
     state_on:
       offset: 8
@@ -497,46 +304,10 @@ switch:
       offset: 8
       data: [0x00]
     command_on:
-      data:
-        [
-          0x30,
-          0xbc,
-          0x00,
-          0x48,
-          0x06,
-          0x01,
-          0x00,
-          0x00,
-          0x11,
-          0x01,
-          0x40,
-          0x17,
-          0x00,
-          0x00,
-          0x00,
-          0x00,
-        ]
+      data: [0x30, 0xbc, 0x00, 0x48, 0x06, 0x01, 0x00, 0x00, 0x11, 0x01, 0x40, 0x17, 0x00, 0x00, 0x00, 0x00]
       ack: [0x30, 0xdc]
     command_off:
-      data:
-        [
-          0x30,
-          0xbc,
-          0x00,
-          0x48,
-          0x06,
-          0x01,
-          0x00,
-          0x00,
-          0x00,
-          0x01,
-          0x00,
-          0x17,
-          0x00,
-          0x00,
-          0x00,
-          0x00,
-        ]
+      data: [0x30, 0xbc, 0x00, 0x48, 0x06, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x17, 0x00, 0x00, 0x00, 0x00]
       ack: [0x30, 0xdc]
 
 climate:
@@ -664,457 +435,14 @@ valve:
       offset: 7
       data: [0x02]
     command_close:
-      data:
-        [
-          0x30,
-          0xbc,
-          0x00,
-          0x2c,
-          0x00,
-          0x02,
-          0x00,
-          0x00,
-          0x00,
-          0x00,
-          0x00,
-          0x00,
-          0x00,
-          0x00,
-          0x00,
-          0x00,
-        ]
+      data: [0x30, 0xbc, 0x00, 0x2c, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
       ack: [0x30, 0xdc]
 
-sensor:
-  - platform: uartex
-    name: "Elevator Floors"
-    icon: "mdi:elevator"
-    unit_of_measurement: "층"
-    state:
-      data: [0x30, 0xd0, 0x00, 0x01, 0x00, 0x44, 0x00]
-      mask: [0xff, 0xf0, 0xff, 0xff, 0xff, 0xff, 0xff]
-    state_number:
-      offset: 9
-
-# 현관문 버튼들
 button:
-  - platform: uartex
-    id: door_call_common
-    name: "Door Call Common"
-    icon: "mdi:phone"
-    command_on:
-      data:
-        [
-          0xAA,
-          0x55,
-          0x79,
-          0xBC,
-          0x08,
-          0x02,
-          0x00,
-          0xFF,
-          0xFF,
-          0xFF,
-          0xFF,
-          0x61,
-          0xFF,
-          0xFF,
-          0xFF,
-          0x03,
-          0x00,
-          0x26,
-          0x95,
-        ]
-      ack: [0x0F, 0x03]
-
-  - platform: uartex
-    id: door_open_common
-    name: "Door Open Common"
-    icon: "mdi:door-sliding-open"
-    command_on:
-      data:
-        [
-          0xAA,
-          0x55,
-          0x79,
-          0xBC,
-          0x08,
-          0x02,
-          0x00,
-          0xFF,
-          0xFF,
-          0xFF,
-          0xFF,
-          0x61,
-          0xFF,
-          0xFF,
-          0xFF,
-          0x24,
-          0x00,
-          0xB9,
-          0xE4,
-        ]
-      ack: [0x0F, 0x24]
-
-  - platform: uartex
-    id: door_call
-    name: "Door Call"
-    icon: "mdi:phone"
-    command_on:
-      data:
-        [
-          0xAA,
-          0x55,
-          0x79,
-          0xBC,
-          0x02,
-          0x02,
-          0x00,
-          0x31,
-          0xFF,
-          0xFF,
-          0xFF,
-          0x61,
-          0xFF,
-          0xFF,
-          0xFF,
-          0x03,
-          0x00,
-          0x08,
-          0xD3,
-        ]
-      ack: [0x0F, 0x03]
-
-  - platform: uartex
-    id: door_open
-    name: "Door Open"
-    icon: "mdi:door-sliding-open"
-    command_on:
-      data:
-        [
-          0xAA,
-          0x55,
-          0x79,
-          0xBC,
-          0x02,
-          0x02,
-          0x00,
-          0x31,
-          0xFF,
-          0xFF,
-          0xFF,
-          0x61,
-          0xFF,
-          0xFF,
-          0xFF,
-          0x24,
-          0x00,
-          0x97,
-          0xA2,
-        ]
-      ack: [0x0F, 0x24]
-
   # 엘리베이터 호출
   - platform: uartex
     name: "Elevator Call"
     icon: "mdi:elevator"
     command_on:
-      data:
-        [
-          0x30,
-          0xbc,
-          0x00,
-          0x01,
-          0x00,
-          0x44,
-          0x00,
-          0x01,
-          0x03,
-          0x00,
-          0x00,
-          0x00,
-          0x00,
-          0x00,
-          0x00,
-          0x00,
-        ]
+      data: [0x30, 0xbc, 0x00, 0x01, 0x00, 0x44, 0x00, 0x01, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
       ack: [0x30, 0xdc]
-
-  # 디버깅용 스캔 버튼들
-  - platform: template
-    name: "Scan All Devices"
-    icon: "mdi:radar"
-    on_press:
-      # 모든 방의 조명 상태 스캔
-      - uartex.write:
-          data:
-            [
-              0x30,
-              0xbc,
-              0x00,
-              0x0e,
-              0x00,
-              0x01,
-              0x00,
-              0x3a,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-            ]
-          ack: [0x30, 0xdc]
-      - delay: 200ms
-      - uartex.write:
-          data:
-            [
-              0x30,
-              0xbc,
-              0x00,
-              0x0e,
-              0x01,
-              0x01,
-              0x00,
-              0x3a,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-            ]
-          ack: [0x30, 0xdc]
-      - delay: 200ms
-      - uartex.write:
-          data:
-            [
-              0x30,
-              0xbc,
-              0x00,
-              0x0e,
-              0x02,
-              0x01,
-              0x00,
-              0x3a,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-            ]
-          ack: [0x30, 0xdc]
-      - delay: 200ms
-      - uartex.write:
-          data:
-            [
-              0x30,
-              0xbc,
-              0x00,
-              0x0e,
-              0x03,
-              0x01,
-              0x00,
-              0x3a,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-            ]
-          ack: [0x30, 0xdc]
-      - delay: 200ms
-      - uartex.write:
-          data:
-            [
-              0x30,
-              0xbc,
-              0x00,
-              0x0e,
-              0x04,
-              0x01,
-              0x00,
-              0x3a,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-            ]
-          ack: [0x30, 0xdc]
-      - delay: 200ms
-      - uartex.write:
-          data:
-            [
-              0x30,
-              0xbc,
-              0x00,
-              0x0e,
-              0x05,
-              0x01,
-              0x00,
-              0x3a,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-            ]
-          ack: [0x30, 0xdc]
-      - delay: 200ms
-      - uartex.write:
-          data:
-            [
-              0x30,
-              0xbc,
-              0x00,
-              0x0e,
-              0x06,
-              0x01,
-              0x00,
-              0x3a,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-            ]
-          ack: [0x30, 0xdc]
-      # 환기팬 스캔
-      - delay: 200ms
-      - uartex.write:
-          data:
-            [
-              0x30,
-              0xbc,
-              0x00,
-              0x48,
-              0x05,
-              0x01,
-              0x00,
-              0x3a,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-            ]
-          ack: [0x30, 0xdc]
-      - delay: 200ms
-      - uartex.write:
-          data:
-            [
-              0x30,
-              0xbc,
-              0x00,
-              0x48,
-              0x06,
-              0x01,
-              0x00,
-              0x3a,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-            ]
-          ack: [0x30, 0xdc]
-      # 난방 스캔
-      - delay: 200ms
-      - uartex.write:
-          data:
-            [
-              0x30,
-              0xbc,
-              0x00,
-              0x36,
-              0x00,
-              0x01,
-              0x00,
-              0x3a,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-            ]
-          ack: [0x30, 0xdc]
-      - delay: 200ms
-      - uartex.write:
-          data:
-            [
-              0x30,
-              0xbc,
-              0x00,
-              0x36,
-              0x01,
-              0x01,
-              0x00,
-              0x3a,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-            ]
-          ack: [0x30, 0xdc]
-      - delay: 200ms
-      - uartex.write:
-          data:
-            [
-              0x30,
-              0xbc,
-              0x00,
-              0x36,
-              0x03,
-              0x01,
-              0x00,
-              0x3a,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-            ]
-          ack: [0x30, 0xdc]
-
-  # 디버깅용 버튼
-  - platform: template
-    name: "Debug Scan"
-    icon: "mdi:bug"
-    on_press:
-      - logger.log: "Debug scan triggered"
