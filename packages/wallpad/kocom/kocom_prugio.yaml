@@ -298,7 +298,6 @@ climate:
       min_temperature: 5 °C
       max_temperature: 30 °C
       temperature_step: 1 °C
-    default_target_temperature: 20 °C
     state:
       data: [0x30, 0xd0, 0x00, 0x36, 0x00]
       mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
