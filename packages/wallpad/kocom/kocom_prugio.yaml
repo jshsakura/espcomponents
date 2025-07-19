@@ -71,10 +71,10 @@ light:
       data: [0x30, 0xbc, 0x00, 0x0e, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
       ack: [0x30, 0xdc]
 
-  # 안방 조명 (Room 1) - 단일 조명
+  # 안방 조명 1 (Room 1)
   - platform: uartex
-    name: "Master Bedroom Light"
-    id: master_bedroom_light
+    name: "Master Bedroom Light 1"
+    id: master_bedroom_light_1
     state:
       data: [0x30, 0xd0, 0x00, 0x0e, 0x01]
       mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
@@ -86,6 +86,26 @@ light:
       data: [0x00]
     command_on:
       data: [0x30, 0xbc, 0x00, 0x0e, 0x01, 0x01, 0x00, 0x00, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
+      ack: [0x30, 0xdc]
+    command_off:
+      data: [0x30, 0xbc, 0x00, 0x0e, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
+      ack: [0x30, 0xdc]
+
+  # 안방 조명 2 (Room 1)
+  - platform: uartex
+    name: "Master Bedroom Light 2"
+    id: master_bedroom_light_2
+    state:
+      data: [0x30, 0xd0, 0x00, 0x0e, 0x01]
+      mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
+    state_on:
+      offset: 9
+      data: [0xff]
+    state_off:
+      offset: 9
+      data: [0x00]
+    command_on:
+      data: [0x30, 0xbc, 0x00, 0x0e, 0x01, 0x01, 0x00, 0x00, 0x00, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
       ack: [0x30, 0xdc]
     command_off:
       data: [0x30, 0xbc, 0x00, 0x0e, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
@@ -543,7 +563,7 @@ select:
   - platform: template
     name: "Living Room Ventilation Mode"
     id: living_room_ventilation_mode
-    icon: "mdi:fan"
+    icon: "mdi:fan-auto"
     optimistic: true
     options:
       - "꺼짐"
@@ -558,9 +578,31 @@ select:
       - logger.log:
           format: "환풍기 모드 변경: %s"
           args: ["x.c_str()"]
+      - lambda: |-
+          // 현재 단계 가져오기
+          std::string current_speed = id(living_room_ventilation_speed).state;
+          uint8_t speed_value = 0x01;  // 기본 1단
+          if (current_speed == "2단") speed_value = 0x02;
+          else if (current_speed == "3단") speed_value = 0x03;
+
+          uint8_t mode_value = 0x00;  // 기본값: 꺼짐
+          if (x == "꺼짐") mode_value = 0x00;
+          else if (x == "자동") mode_value = 0x10;
+          else if (x == "일반") mode_value = 0x11;
+          else if (x == "취침") mode_value = 0x12;
+          else if (x == "외기") mode_value = 0x13;
+          else if (x == "히터") mode_value = 0x14;
+          else if (x == "외출") mode_value = 0x15;
+
+          ESP_LOGI("ventilation", "환풍기 모드 변경: %s (0x%02X), 단계: %d", x.c_str(), mode_value, speed_value);
       - uartex.write:
           data: !lambda |-
-            uint8_t mode_value = 0x00;  // 기본값: 꺼짐
+            std::string current_speed = id(living_room_ventilation_speed).state;
+            uint8_t speed_value = 0x01;
+            if (current_speed == "2단") speed_value = 0x02;
+            else if (current_speed == "3단") speed_value = 0x03;
+
+            uint8_t mode_value = 0x00;
             if (x == "꺼짐") mode_value = 0x00;
             else if (x == "자동") mode_value = 0x10;
             else if (x == "일반") mode_value = 0x11;
@@ -569,6 +611,58 @@ select:
             else if (x == "히터") mode_value = 0x14;
             else if (x == "외출") mode_value = 0x15;
 
-            ESP_LOGI("ventilation", "환풍기 모드 변경: %s (0x%02X)", x.c_str(), mode_value);
-            return {0x30, 0xbc, 0x00, 0x48, 0x05, 0x01, 0x00, 0x00, mode_value, 0x01, 0x40, 0x17, 0x00, 0x00, 0x00, 0x00};
+            return {0x30, 0xbc, 0x00, 0x48, 0x05, 0x01, 0x00, 0x00, mode_value, speed_value, 0x40, 0x17, 0x00, 0x00, 0x00, 0x00};
+          ack: [0x30, 0xdc]
+
+  # 거실 환풍기 단계 선택 (Room 5)
+  - platform: template
+    name: "Living Room Ventilation Speed"
+    id: living_room_ventilation_speed
+    icon: "mdi:speedometer"
+    optimistic: true
+    options:
+      - "1단"
+      - "2단"
+      - "3단"
+    initial_option: "1단"
+    set_action:
+      - logger.log:
+          format: "환풍기 단계 변경: %s"
+          args: ["x.c_str()"]
+      - lambda: |-
+          // 현재 모드 가져오기
+          std::string current_mode = id(living_room_ventilation_mode).state;
+          uint8_t mode_value = 0x11;  // 기본 일반모드
+          if (current_mode == "꺼짐") mode_value = 0x00;
+          else if (current_mode == "자동") mode_value = 0x10;
+          else if (current_mode == "일반") mode_value = 0x11;
+          else if (current_mode == "취침") mode_value = 0x12;
+          else if (current_mode == "외기") mode_value = 0x13;
+          else if (current_mode == "히터") mode_value = 0x14;
+          else if (current_mode == "외출") mode_value = 0x15;
+
+          uint8_t speed_value = 0x01;  // 기본값: 1단
+          if (x == "1단") speed_value = 0x01;
+          else if (x == "2단") speed_value = 0x02;
+          else if (x == "3단") speed_value = 0x03;
+
+          ESP_LOGI("ventilation", "환풍기 단계 변경: %s (%d), 모드: %s (0x%02X)", x.c_str(), speed_value, current_mode.c_str(), mode_value);
+      - uartex.write:
+          data: !lambda |-
+            std::string current_mode = id(living_room_ventilation_mode).state;
+            uint8_t mode_value = 0x11;
+            if (current_mode == "꺼짐") mode_value = 0x00;
+            else if (current_mode == "자동") mode_value = 0x10;
+            else if (current_mode == "일반") mode_value = 0x11;
+            else if (current_mode == "취침") mode_value = 0x12;
+            else if (current_mode == "외기") mode_value = 0x13;
+            else if (current_mode == "히터") mode_value = 0x14;
+            else if (current_mode == "외출") mode_value = 0x15;
+
+            uint8_t speed_value = 0x01;
+            if (x == "1단") speed_value = 0x01;
+            else if (x == "2단") speed_value = 0x02;
+            else if (x == "3단") speed_value = 0x03;
+
+            return {0x30, 0xbc, 0x00, 0x48, 0x05, 0x01, 0x00, 0x00, mode_value, speed_value, 0x40, 0x17, 0x00, 0x00, 0x00, 0x00};
           ack: [0x30, 0xdc]
