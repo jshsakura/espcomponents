@@ -344,7 +344,6 @@ climate:
       min_temperature: 5 °C
       max_temperature: 30 °C
       temperature_step: 1 °C
-    supported_modes: ["heat"] # 전원 버튼 숨김
     state:
       data: [0x30, 0xd0, 0x00, 0x36, 0x00]
       mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
@@ -389,7 +388,6 @@ climate:
       min_temperature: 5 °C
       max_temperature: 30 °C
       temperature_step: 1 °C
-    supported_modes: ["heat"] # 전원 버튼 숨김
     state:
       data: [0x30, 0xd0, 0x00, 0x36, 0x01]
       mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
@@ -434,7 +432,6 @@ climate:
       min_temperature: 5 °C
       max_temperature: 30 °C
       temperature_step: 1 °C
-    supported_modes: ["heat"] # 전원 버튼 숨김
     state:
       data: [0x30, 0xd0, 0x00, 0x36, 0x03]
       mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
@@ -479,7 +476,6 @@ climate:
       min_temperature: 5 °C
       max_temperature: 30 °C
       temperature_step: 1 °C
-    supported_modes: ["heat"] # 전원 버튼 숨김
     state:
       data: [0x30, 0xd0, 0x00, 0x36, 0x02]
       mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
