@@ -43,16 +43,16 @@ uartex:
   log:
     disabled: False
 
-# 로그 설정 - 보일러 로그 최소화
+# 로그 설정 - 보일러 로그 최소화, 환풍기 로그 강화
 logger:
   level: INFO
   logs:
-    uart_debug: INFO
-    uartex: INFO
+    uart_debug: WARN # UART 로그 줄이기
+    uartex: WARN # uartex 로그 줄이기
     ventilation: INFO
-    climate: WARN
-    light: INFO
-    switch: INFO
+    climate: ERROR # 보일러 로그 거의 끄기
+    light: WARN # 조명 로그 줄이기
+    switch: INFO # 환풍기(스위치) 로그 유지
 
 light:
   # 거실 조명 (Room 0) - 단일 조명
@@ -300,13 +300,13 @@ switch:
     name: "Guest Bathroom Ventilation"
     id: guest_bathroom_ventilation
     state:
-      data: [0x30, 0xdd, 0x00, 0x48, 0x05]
+      data: [0x30, 0xdc, 0x00, 0x01, 0x00]
       mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
     state_on:
-      offset: 8
+      offset: 13
       data: [0x11]
     state_off:
-      offset: 8
+      offset: 13
       data: [0x00]
     command_on:
       data: [0x30, 0xbc, 0x00, 0x48, 0x05, 0x01, 0x00, 0x00, 0x11, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
@@ -324,13 +324,13 @@ switch:
     name: "Master Bathroom Ventilation"
     id: master_bathroom_ventilation
     state:
-      data: [0x30, 0xdd, 0x00, 0x48, 0x02]
+      data: [0x30, 0xdc, 0x00, 0x01, 0x00]
       mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
     state_on:
-      offset: 8
+      offset: 10
       data: [0x11]
     state_off:
-      offset: 8
+      offset: 10
       data: [0x00]
     command_on:
       data: [0x30, 0xbc, 0x00, 0x48, 0x02, 0x01, 0x00, 0x00, 0x11, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
@@ -343,12 +343,12 @@ switch:
     on_turn_off:
       - logger.log: "안방화장실 환기팬 꺼짐"
 
-  # 거실 전체 환풍기 (Room 0) - 단순 on/off
+  # 거실 전체 환풍기 (Room 0) - 원래 구조로 복원
   - platform: uartex
     name: "Living Room Ventilation"
     id: living_room_ventilation
     state:
-      data: [0x30, 0xdd, 0x00, 0x48, 0x00]
+      data: [0x30, 0xd0, 0x00, 0x48, 0x00]
       mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
     state_on:
       offset: 8
