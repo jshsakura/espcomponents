@@ -540,10 +540,11 @@ button:
 
 select:
   # 거실 환풍기 모드 선택 (Room 5)
-  - platform: uartex
+  - platform: template
     name: "Living Room Ventilation Mode"
     id: living_room_ventilation_mode
     icon: "mdi:fan"
+    optimistic: true
     options:
       - "꺼짐"
       - "자동"
@@ -552,28 +553,22 @@ select:
       - "외기"
       - "히터"
       - "외출"
-    state:
-      data: [0x30, 0xdd, 0x00, 0x48, 0x05]
-      mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
-    state_option:
-      offset: 8
-      options:
-        "꺼짐": [0x00]
-        "자동": [0x10]
-        "일반": [0x11]
-        "취침": [0x12]
-        "외기": [0x13]
-        "히터": [0x14]
-        "외출": [0x15]
-    command_option: !lambda |-
-      uint8_t mode_value = 0x00;  // 기본값: 꺼짐
-      if (x == "꺼짐") mode_value = 0x00;
-      else if (x == "자동") mode_value = 0x10;
-      else if (x == "일반") mode_value = 0x11;
-      else if (x == "취침") mode_value = 0x12;
-      else if (x == "외기") mode_value = 0x13;
-      else if (x == "히터") mode_value = 0x14;
-      else if (x == "외출") mode_value = 0x15;
+    initial_option: "꺼짐"
+    set_action:
+      - logger.log:
+          format: "환풍기 모드 변경: %s"
+          args: ["x.c_str()"]
+      - uartex.write:
+          data: !lambda |-
+            uint8_t mode_value = 0x00;  // 기본값: 꺼짐
+            if (x == "꺼짐") mode_value = 0x00;
+            else if (x == "자동") mode_value = 0x10;
+            else if (x == "일반") mode_value = 0x11;
+            else if (x == "취침") mode_value = 0x12;
+            else if (x == "외기") mode_value = 0x13;
+            else if (x == "히터") mode_value = 0x14;
+            else if (x == "외출") mode_value = 0x15;
 
-      ESP_LOGI("ventilation", "환풍기 모드 변경: %s (0x%02X)", x.c_str(), mode_value);
-      return {{0x30, 0xbc, 0x00, 0x48, 0x05, 0x01, 0x00, 0x00, mode_value, 0x01, 0x40, 0x17, 0x00, 0x00, 0x00, 0x00},{0x30, 0xdc}};
+            ESP_LOGI("ventilation", "환풍기 모드 변경: %s (0x%02X)", x.c_str(), mode_value);
+            return {0x30, 0xbc, 0x00, 0x48, 0x05, 0x01, 0x00, 0x00, mode_value, 0x01, 0x40, 0x17, 0x00, 0x00, 0x00, 0x00};
+          ack: [0x30, 0xdc]
