@@ -290,7 +290,7 @@ switch:
       ack: [0x30, 0xdc]
 
 climate:
-  # 거실 난방 (Room 0) - 외출/난방 모드만 지원 (전원 버튼 없음)
+  # 거실 난방 (Room 0)
   - platform: uartex
     name: "Living Room Heater"
     id: living_room_heater
@@ -309,6 +309,10 @@ climate:
       offset: 10
       length: 1
       precision: 0
+    state_off:
+      offset: 8
+      data: [0x00, 0x01]
+      mask: [0xF0]
     state_heat:
       offset: 8
       data: [0x10, 0x11]
@@ -319,7 +323,7 @@ climate:
     state_preset_none:
       offset: 9
       data: [0x00]
-    # command_off 제거 - 하드웨어에 전원 버튼 없음
+    # command_off 제거 - 하드웨어에 전원 버튼 없음 (외출모드 사용)
     command_heat: !lambda |-
       uint8_t target = id(living_room_heater).target_temperature;
       return {{0x30, 0xbc, 0x00, 0x36, 0x00, 0x01, 0x00, 0x00, 0x11, 0x00, target, 0x00, 0x00, 0x00, 0x00, 0x00},{0x30, 0xdc}};
