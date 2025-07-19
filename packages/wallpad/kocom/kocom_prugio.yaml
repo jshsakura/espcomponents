@@ -384,7 +384,6 @@ climate:
       min_temperature: 5 °C
       max_temperature: 30 °C
       temperature_step: 1 °C
-    modes: [HEAT] # HEAT 모드만 지원 (OFF 모드 숨김)
     state:
       data: [0x30, 0xd0, 0x00, 0x36, 0x00]
       mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
@@ -427,7 +426,6 @@ climate:
       min_temperature: 5 °C
       max_temperature: 30 °C
       temperature_step: 1 °C
-    modes: [HEAT] # HEAT 모드만 지원 (OFF 모드 숨김)
     state:
       data: [0x30, 0xd0, 0x00, 0x36, 0x01]
       mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
@@ -470,7 +468,6 @@ climate:
       min_temperature: 5 °C
       max_temperature: 30 °C
       temperature_step: 1 °C
-    modes: [HEAT] # HEAT 모드만 지원 (OFF 모드 숨김)
     state:
       data: [0x30, 0xd0, 0x00, 0x36, 0x03]
       mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
@@ -514,7 +511,6 @@ climate:
       min_temperature: 5 °C
       max_temperature: 30 °C
       temperature_step: 1 °C
-    modes: [HEAT] # HEAT 모드만 지원 (OFF 모드 숨김)
     state:
       data: [0x30, 0xd0, 0x00, 0x36, 0x02]
       mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
