@@ -43,12 +43,16 @@ uartex:
   log:
     disabled: False
 
-# 로그 설정 - 운영용 (로그 최소화)
+# 로그 설정 - 디버깅용 (로그 상세화)
 logger:
-  level: INFO
+  level: DEBUG
   logs:
-    uart_debug: WARN
-    uartex: WARN
+    uart_debug: INFO
+    uartex: INFO
+    ventilation: DEBUG
+    climate: DEBUG
+    light: DEBUG
+    switch: DEBUG
 
 light:
   # 거실 조명 (Room 0) - 단일 조명
