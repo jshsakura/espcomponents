@@ -325,6 +325,8 @@ climate:
       min_temperature: 5 °C
       max_temperature: 30 °C
       temperature_step: 1 °C
+    default_target_temperature: 20 °C
+    default_preset: none
     state:
       data: [0x30, 0xd0, 0x00, 0x36, 0x00]
       mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
@@ -338,8 +340,10 @@ climate:
       precision: 0
     state_heat:
       offset: 8
-      data: [0x10, 0x11]
-      mask: [0xF0]
+      data: [0x11] # 난방 상태 (0x11만 체크)
+    state_off:
+      offset: 8
+      data: [0x00] # 꺼진 상태
     state_preset_away:
       offset: 9
       data: [0x01]
@@ -369,6 +373,8 @@ climate:
       min_temperature: 5 °C
       max_temperature: 30 °C
       temperature_step: 1 °C
+    default_target_temperature: 20 °C
+    default_preset: none
     state:
       data: [0x30, 0xd0, 0x00, 0x36, 0x01]
       mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
@@ -382,8 +388,10 @@ climate:
       precision: 0
     state_heat:
       offset: 8
-      data: [0x10, 0x11]
-      mask: [0xF0]
+      data: [0x11] # 난방 상태 (0x11만 체크)
+    state_off:
+      offset: 8
+      data: [0x00] # 꺼진 상태
     state_preset_away:
       offset: 9
       data: [0x01]
@@ -413,6 +421,8 @@ climate:
       min_temperature: 5 °C
       max_temperature: 30 °C
       temperature_step: 1 °C
+    default_target_temperature: 20 °C
+    default_preset: none
     state:
       data: [0x30, 0xd0, 0x00, 0x36, 0x03]
       mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
@@ -426,8 +436,10 @@ climate:
       precision: 0
     state_heat:
       offset: 8
-      data: [0x10, 0x11]
-      mask: [0xF0]
+      data: [0x11] # 난방 상태 (0x11만 체크)
+    state_off:
+      offset: 8
+      data: [0x00] # 꺼진 상태
     state_preset_away:
       offset: 9
       data: [0x01]
@@ -457,6 +469,8 @@ climate:
       min_temperature: 5 °C
       max_temperature: 30 °C
       temperature_step: 1 °C
+    default_target_temperature: 20 °C
+    default_preset: none
     state:
       data: [0x30, 0xd0, 0x00, 0x36, 0x02]
       mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
@@ -470,8 +484,10 @@ climate:
       precision: 0
     state_heat:
       offset: 8
-      data: [0x10, 0x11]
-      mask: [0xF0]
+      data: [0x11] # 난방 상태 (0x11만 체크)
+    state_off:
+      offset: 8
+      data: [0x00] # 꺼진 상태
     state_preset_away:
       offset: 9
       data: [0x01]
