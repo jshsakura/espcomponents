@@ -353,6 +353,45 @@ switch:
       # 일단 끄기는 나중에 (켜기부터 해결)
       - logger.log: "거실 실링팬 끄기 (아직 미구현)"
 
+  # 전원 공급선만 활성화 (조명은 켜지지 않음)
+  - platform: template
+    name: "Power Supply Activate"
+    id: power_supply_activate
+    icon: "mdi:power-plug"
+    turn_on_action:
+      # 전원 공급선만 활성화 (0x9C 패킷)
+      - uartex.write:
+          data: [0x30, 0x9c, 0x00, 0x0e, 0xff, 0x01, 0x00, 0x66, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff]
+          ack: [0x30, 0xdc]
+      - logger.log: "전원 공급선 활성화 (조명은 켜지지 않음)"
+    turn_off_action:
+      - logger.log: "전원 공급 비활성화"
+
+  # 0x2C 디바이스 제어 (새로 발견된 디바이스)
+  - platform: uartex
+    name: "Unknown Device 2C"
+    id: unknown_device_2c
+    icon: "mdi:help-circle"
+    state:
+      data: [0x30, 0xdc, 0x00, 0x2c, 0x00]
+      mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
+    state_on:
+      offset: 8
+      data: [0x01]
+    state_off:
+      offset: 8
+      data: [0x00]
+    command_on:
+      data: [0x30, 0xbc, 0x00, 0x2c, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
+      ack: [0x30, 0xdc]
+    command_off:
+      data: [0x30, 0xbc, 0x00, 0x2c, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
+      ack: [0x30, 0xdc]
+    on_turn_on:
+      - logger.log: "0x2C 디바이스 켜짐 (정체불명)"
+    on_turn_off:
+      - logger.log: "0x2C 디바이스 꺼짐 (정체불명)"
+
 climate:
   # 거실 난방 (Room 0) - 프리셋 모드로만 제어 (전원 버튼 없음)
   - platform: uartex
