@@ -609,6 +609,18 @@ climate:
             - "x.current_temperature"
             - 'x.preset == CLIMATE_PRESET_AWAY ? "외출" : "일반"'
 
+text_sensor:
+  - platform: uartex
+    name: "Elevator"
+    icon: "mdi:elevator"
+    state: 
+      data: [0x30, 0x00, 0x00, 0x01, 0x00, 0x44, 0x00]
+      mask: [0xff, 0x00, 0xff, 0xff, 0xff, 0xff, 0xff]
+    lambda: |-
+      if (check_value(8, 0x00, data, len)) return "호출";
+      if (check_value(8, 0x03, data, len)) return "도착";
+      return "Unknown";
+
 button:
   # 엘리베이터 호출
   - platform: uartex
