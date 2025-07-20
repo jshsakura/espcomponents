@@ -358,6 +358,7 @@ switch:
     name: "Power Supply Activate"
     id: power_supply_activate
     icon: "mdi:power-plug"
+    optimistic: true
     turn_on_action:
       # 전원 공급선만 활성화 (uartex 사용으로 자동 체크섬)
       - uartex.write:
