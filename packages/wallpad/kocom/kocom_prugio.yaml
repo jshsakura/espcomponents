@@ -43,16 +43,12 @@ uartex:
   log:
     disabled: False
 
-# 로그 설정 - 보일러 로그 최소화, 환풍기 로그 강화
+# 로그 설정 - 디버깅용
 logger:
-  level: INFO
+  level: DEBUG
   logs:
-    uart_debug: WARN # UART 로그 줄이기
-    uartex: WARN # uartex 로그 줄이기
-    ventilation: INFO
-    climate: ERROR # 보일러 로그 거의 끄기
-    light: WARN # 조명 로그 줄이기
-    switch: INFO # 환풍기(스위치) 로그 유지
+    uart_debug: DEBUG
+    uartex: DEBUG
 
 light:
   # 거실 조명 (Room 0) - 단일 조명
