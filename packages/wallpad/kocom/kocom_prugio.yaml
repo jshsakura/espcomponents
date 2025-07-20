@@ -291,7 +291,7 @@ light:
       ack: [0x30, 0xdc]
 
 switch:
-  # 거실화장실 환기팬 (Room 5) - 올바른 구조
+  # 거실화장실 환기팬 (Room 5) - 원래 설정으로 복원
   - platform: uartex
     name: "Guest Bathroom Ventilation"
     id: guest_bathroom_ventilation
@@ -299,10 +299,10 @@ switch:
       data: [0x30, 0xdc, 0x00, 0x01, 0x00]
       mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
     state_on:
-      offset: 13
+      offset: 10
       data: [0x11]
     state_off:
-      offset: 13
+      offset: 10
       data: [0x00]
     command_on:
       data: [0x30, 0xbc, 0x00, 0x48, 0x05, 0x01, 0x00, 0x00, 0x11, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
@@ -315,7 +315,7 @@ switch:
     on_turn_off:
       - logger.log: "거실화장실 환기팬 꺼짐"
 
-  # 안방화장실 환기팬 (Room 2) - 올바른 구조
+  # 안방화장실 환기팬 (Room 2) - 원래 설정으로 복원
   - platform: uartex
     name: "Master Bathroom Ventilation"
     id: master_bathroom_ventilation
@@ -323,10 +323,10 @@ switch:
       data: [0x30, 0xdc, 0x00, 0x01, 0x00]
       mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
     state_on:
-      offset: 10
+      offset: 11
       data: [0x11]
     state_off:
-      offset: 10
+      offset: 11
       data: [0x00]
     command_on:
       data: [0x30, 0xbc, 0x00, 0x48, 0x02, 0x01, 0x00, 0x00, 0x11, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
