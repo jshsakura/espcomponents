@@ -34,7 +34,7 @@ uartex:
   tx_footer: [0x0D, 0x0D]
 
   rx_checksum: add_no_header
-  tx_checksum: add_no_header
+  tx_checksum: add_with_header
 
   version:
     disabled: False
