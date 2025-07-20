@@ -359,11 +359,10 @@ switch:
     id: power_supply_activate
     icon: "mdi:power-plug"
     turn_on_action:
-      # 전원 공급선만 활성화 (0x9C 패킷)
+      # 전원 공급선만 활성화 (uartex 사용으로 자동 체크섬)
       - uartex.write:
           data: [0x30, 0x9c, 0x00, 0x0e, 0xff, 0x01, 0x00, 0x66, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff]
-          ack: [0x30, 0xdc]
-      - logger.log: "전원 공급선 활성화 (조명은 켜지지 않음)"
+      - logger.log: "전원 공급선 활성화 (uartex 사용)"
     turn_off_action:
       - logger.log: "전원 공급 비활성화"
 
@@ -626,16 +625,20 @@ climate:
             - 'x.preset == CLIMATE_PRESET_AWAY ? "외출" : "일반"'
 
 text_sensor:
+  # 엘리베이터 도착 감지 (별도 센서)
   - platform: uartex
-    name: "Elevator"
-    icon: "mdi:elevator"
+    name: "Elevator Arrival"
+    icon: "mdi:elevator-up"
     state:
-      data: [0x30, 0x00, 0x00, 0x01, 0x00, 0x44, 0x00]
-      mask: [0xff, 0x00, 0xff, 0xff, 0xff, 0xff, 0xff]
+      data: [0x30, 0xbc, 0x00, 0x44, 0x00]
+      mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
     lambda: |-
-      if (check_value(8, 0x00, data, len)) return "호출";
-      if (check_value(8, 0x03, data, len)) return "도착";
-      return "Unknown";
+      // 엘리베이터 관련 모든 패킷 로깅
+      ESP_LOGI("elevator", "엘리베이터 패킷: %s", format_hex_pretty(std::vector<uint8_t>(data, data + len)).c_str());
+
+      if (check_value(8, 0x00, data, len)) return "도착!";
+      if (check_value(8, 0x01, data, len)) return "이동중";
+      return "대기";
 
 button:
   # 엘리베이터 호출
