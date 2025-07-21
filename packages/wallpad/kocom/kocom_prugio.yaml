@@ -585,21 +585,42 @@ climate:
             - "x.current_temperature"
             - 'x.preset == CLIMATE_PRESET_AWAY ? "외출" : "일반"'
 
-text_sensor:
-  # 엘리베이터 도착 감지 (별도 센서)
+binary_sensor:
+  # 현관 초인종 감지 (다양한 패턴 시도)
   - platform: uartex
-    name: "Elevator Arrival"
-    icon: "mdi:elevator-up"
+    name: "Doorbell"
+    icon: "mdi:doorbell"
+    device_class: sound
     state:
-      data: [0x30, 0xbc, 0x00, 0x44, 0x00]
+      data: [0x30, 0xbc, 0x00, 0x60, 0x00] # 모션/도어벨 디바이스
       mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
-    lambda: |-
-      // 엘리베이터 관련 모든 패킷 로깅
-      ESP_LOGI("elevator", "엘리베이터 패킷: %s", format_hex_pretty(std::vector<uint8_t>(data, data + len)).c_str());
+    state_on:
+      offset: 8
+      data: [0x01]
+    state_off:
+      offset: 8
+      data: [0x00]
+    on_press:
+      - logger.log: "🔔 현관 초인종이 눌렸습니다!"
+    on_release:
+      - logger.log: "🔔 현관 초인종 신호 종료"
 
-      if (check_value(8, 0x00, data, len)) return "도착!";
-      if (check_value(8, 0x01, data, len)) return "이동중";
-      return "대기";
+  # 현관 초인종 감지 (대안 패턴)
+  - platform: uartex
+    name: "Doorbell Alt"
+    icon: "mdi:doorbell-video"
+    device_class: sound
+    state:
+      data: [0x30, 0xd0, 0x00, 0x60, 0x00] # 상태 조회 패턴
+      mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
+    state_on:
+      offset: 8
+      data: [0x01]
+    state_off:
+      offset: 8
+      data: [0x00]
+    on_press:
+      - logger.log: "🔔 현관 초인종 감지 (대안 패턴)!"
 
 button:
   # 엘리베이터 호출
