@@ -296,6 +296,7 @@ switch:
     name: "Guest Bathroom Ventilation"
     id: guest_bathroom_ventilation
     optimistic: true
+    restore_mode: DISABLED
     turn_on_action:
       # 현재 조명 상태를 유지하면서 환기팬만 켜기
       - if:
@@ -382,6 +383,7 @@ switch:
     name: "Master Bathroom Ventilation"
     id: master_bathroom_ventilation
     optimistic: true
+    restore_mode: DISABLED
     turn_on_action:
       # 현재 조명 상태를 유지하면서 환기팬만 켜기
       - if:
@@ -844,6 +846,7 @@ switch:
     name: "All Lights Control"
     icon: "mdi:lightbulb-group"
     optimistic: true
+    restore_mode: DISABLED
     turn_on_action:
       # 이전 상태 복원 (일괄소등 해제) - 월패드가 기억하는 이전 상태로만 복원
       - logger.log: "일괄소등 해제 - 이전 상태로 복원 중..."
