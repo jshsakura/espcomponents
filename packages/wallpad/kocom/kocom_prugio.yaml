@@ -292,18 +292,10 @@ light:
 
 switch:
   # 거실화장실 환기팬 (Room 5) - 조명과 같은 디바이스지만 다른 offset 사용
-  - platform: uartex
+  - platform: template
     name: "Guest Bathroom Ventilation"
     id: guest_bathroom_ventilation
-    state:
-      data: [0x30, 0xdd, 0x00, 0x0e, 0x05]
-      mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
-    state_on:
-      offset: 10
-      data: [0xff]
-    state_off:
-      offset: 10
-      data: [0x00]
+    optimistic: true
     turn_on_action:
       # 현재 조명 상태를 유지하면서 환기팬만 켜기
       - if:
@@ -386,18 +378,10 @@ switch:
       - logger.log: "거실화장실 환기팬 꺼짐"
 
   # 안방화장실 환기팬 (Room 2) - 조명과 같은 디바이스지만 다른 offset 사용
-  - platform: uartex
+  - platform: template
     name: "Master Bathroom Ventilation"
     id: master_bathroom_ventilation
-    state:
-      data: [0x30, 0xdd, 0x00, 0x0e, 0x02]
-      mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
-    state_on:
-      offset: 12
-      data: [0xff]
-    state_off:
-      offset: 12
-      data: [0x00]
+    optimistic: true
     turn_on_action:
       # 현재 조명 상태를 유지하면서 환기팬만 켜기
       - if:
