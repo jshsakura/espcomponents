@@ -1118,22 +1118,24 @@ binary_sensor:
     on_release:
       - logger.log: "🔔 현관 초인종 신호 종료"
 
-  # 현관 초인종 감지 (대안 패턴)
+  # 현관문 열림 감지 센서
   - platform: uartex
-    name: "Doorbell Alt"
-    icon: "mdi:doorbell-video"
-    device_class: sound
+    name: "Front Door"
+    icon: "mdi:door"
+    device_class: door
     state:
       data: [0x30, 0xd0, 0x00, 0x60, 0x00] # 상태 조회 패턴
       mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
     state_on:
       offset: 8
-      data: [0x01]
+      data: [0x01] # 문 열림
     state_off:
       offset: 8
-      data: [0x00]
+      data: [0x00] # 문 닫힘
     on_press:
-      - logger.log: "🔔 현관 초인종 감지 (대안 패턴)!"
+      - logger.log: "� 현관문이 종열렸습니다!"
+    on_release:
+      - logger.log: "🚪 현관문이 닫혔습니다!"
 
 button:
   # 엘리베이터 호출
