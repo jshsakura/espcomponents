@@ -403,7 +403,7 @@ switch:
                             data:
                               [
                                 0x30,
-                                0xbc,
+                                0xdc,
                                 0x00,
                                 0x0e,
                                 0x02,
@@ -414,7 +414,9 @@ switch:
                                 0xff,
                                 0xff,
                                 0x00,
+                                0x00,
                                 0xff,
+                                0x00,
                                 0x00,
                                 0x00,
                                 0x00,
@@ -426,7 +428,7 @@ switch:
                             data:
                               [
                                 0x30,
-                                0xbc,
+                                0xdc,
                                 0x00,
                                 0x0e,
                                 0x02,
@@ -437,7 +439,9 @@ switch:
                                 0xff,
                                 0x00,
                                 0x00,
+                                0x00,
                                 0xff,
+                                0x00,
                                 0x00,
                                 0x00,
                                 0x00,
@@ -453,7 +457,7 @@ switch:
                             data:
                               [
                                 0x30,
-                                0xbc,
+                                0xdc,
                                 0x00,
                                 0x0e,
                                 0x02,
@@ -464,7 +468,9 @@ switch:
                                 0x00,
                                 0xff,
                                 0x00,
+                                0x00,
                                 0xff,
+                                0x00,
                                 0x00,
                                 0x00,
                                 0x00,
@@ -476,7 +482,7 @@ switch:
                             data:
                               [
                                 0x30,
-                                0xbc,
+                                0xdc,
                                 0x00,
                                 0x0e,
                                 0x02,
@@ -487,7 +493,9 @@ switch:
                                 0x00,
                                 0x00,
                                 0x00,
+                                0x00,
                                 0xff,
+                                0x00,
                                 0x00,
                                 0x00,
                                 0x00,
@@ -507,7 +515,7 @@ switch:
                             data:
                               [
                                 0x30,
-                                0xbc,
+                                0xdc,
                                 0x00,
                                 0x0e,
                                 0x02,
@@ -518,7 +526,9 @@ switch:
                                 0xff,
                                 0xff,
                                 0x00,
+                                0x00,
                                 0xff,
+                                0x00,
                                 0x00,
                                 0x00,
                                 0x00,
@@ -530,7 +540,7 @@ switch:
                             data:
                               [
                                 0x30,
-                                0xbc,
+                                0xdc,
                                 0x00,
                                 0x0e,
                                 0x02,
@@ -541,7 +551,9 @@ switch:
                                 0xff,
                                 0x00,
                                 0x00,
+                                0x00,
                                 0xff,
+                                0x00,
                                 0x00,
                                 0x00,
                                 0x00,
@@ -557,7 +569,7 @@ switch:
                             data:
                               [
                                 0x30,
-                                0xbc,
+                                0xdc,
                                 0x00,
                                 0x0e,
                                 0x02,
@@ -568,7 +580,9 @@ switch:
                                 0x00,
                                 0xff,
                                 0x00,
+                                0x00,
                                 0xff,
+                                0x00,
                                 0x00,
                                 0x00,
                                 0x00,
@@ -580,7 +594,7 @@ switch:
                             data:
                               [
                                 0x30,
-                                0xbc,
+                                0xdc,
                                 0x00,
                                 0x0e,
                                 0x02,
@@ -591,7 +605,9 @@ switch:
                                 0x00,
                                 0x00,
                                 0x00,
+                                0x00,
                                 0xff,
+                                0x00,
                                 0x00,
                                 0x00,
                                 0x00,
@@ -617,7 +633,7 @@ switch:
                             data:
                               [
                                 0x30,
-                                0xbc,
+                                0xdc,
                                 0x00,
                                 0x0e,
                                 0x02,
@@ -627,6 +643,8 @@ switch:
                                 0xff,
                                 0xff,
                                 0xff,
+                                0x00,
+                                0x00,
                                 0x00,
                                 0x00,
                                 0x00,
@@ -640,7 +658,7 @@ switch:
                             data:
                               [
                                 0x30,
-                                0xbc,
+                                0xdc,
                                 0x00,
                                 0x0e,
                                 0x02,
@@ -649,6 +667,8 @@ switch:
                                 0x00,
                                 0xff,
                                 0xff,
+                                0x00,
+                                0x00,
                                 0x00,
                                 0x00,
                                 0x00,
@@ -667,7 +687,7 @@ switch:
                             data:
                               [
                                 0x30,
-                                0xbc,
+                                0xdc,
                                 0x00,
                                 0x0e,
                                 0x02,
@@ -677,6 +697,8 @@ switch:
                                 0xff,
                                 0x00,
                                 0xff,
+                                0x00,
+                                0x00,
                                 0x00,
                                 0x00,
                                 0x00,
@@ -690,7 +712,7 @@ switch:
                             data:
                               [
                                 0x30,
-                                0xbc,
+                                0xdc,
                                 0x00,
                                 0x0e,
                                 0x02,
@@ -698,6 +720,8 @@ switch:
                                 0x00,
                                 0x00,
                                 0xff,
+                                0x00,
+                                0x00,
                                 0x00,
                                 0x00,
                                 0x00,
@@ -721,7 +745,7 @@ switch:
                             data:
                               [
                                 0x30,
-                                0xbc,
+                                0xdc,
                                 0x00,
                                 0x0e,
                                 0x02,
@@ -731,6 +755,8 @@ switch:
                                 0x00,
                                 0xff,
                                 0xff,
+                                0x00,
+                                0x00,
                                 0x00,
                                 0x00,
                                 0x00,
@@ -744,7 +770,7 @@ switch:
                             data:
                               [
                                 0x30,
-                                0xbc,
+                                0xdc,
                                 0x00,
                                 0x0e,
                                 0x02,
@@ -753,6 +779,8 @@ switch:
                                 0x00,
                                 0x00,
                                 0xff,
+                                0x00,
+                                0x00,
                                 0x00,
                                 0x00,
                                 0x00,
@@ -771,7 +799,7 @@ switch:
                             data:
                               [
                                 0x30,
-                                0xbc,
+                                0xdc,
                                 0x00,
                                 0x0e,
                                 0x02,
@@ -786,6 +814,8 @@ switch:
                                 0x00,
                                 0x00,
                                 0x00,
+                                0x00,
+                                0x00,
                               ]
                             ack: [0x30, 0xdc]
                       else:
@@ -794,11 +824,13 @@ switch:
                             data:
                               [
                                 0x30,
-                                0xbc,
+                                0xdc,
                                 0x00,
                                 0x0e,
                                 0x02,
                                 0x01,
+                                0x00,
+                                0x00,
                                 0x00,
                                 0x00,
                                 0x00,
