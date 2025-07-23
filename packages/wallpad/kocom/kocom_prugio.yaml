@@ -403,7 +403,7 @@ switch:
                             data:
                               [
                                 0x30,
-                                0xdc,
+                                0xbc,
                                 0x00,
                                 0x0e,
                                 0x02,
@@ -413,8 +413,6 @@ switch:
                                 0xff,
                                 0xff,
                                 0xff,
-                                0x00,
-                                0x00,
                                 0xff,
                                 0x00,
                                 0x00,
@@ -428,7 +426,7 @@ switch:
                             data:
                               [
                                 0x30,
-                                0xdc,
+                                0xbc,
                                 0x00,
                                 0x0e,
                                 0x02,
@@ -437,8 +435,6 @@ switch:
                                 0x00,
                                 0xff,
                                 0xff,
-                                0x00,
-                                0x00,
                                 0x00,
                                 0xff,
                                 0x00,
@@ -872,7 +868,6 @@ switch:
       - logger.log: "거실 전체 환풍기 켜짐 (0x48 디바이스)"
     on_turn_off:
       - logger.log: "거실 전체 환풍기 꺼짐 (0x48 디바이스)"
-
 
 climate:
   # 거실 난방 (Room 0) - 프리셋 모드로만 제어 (전원 버튼 없음)
