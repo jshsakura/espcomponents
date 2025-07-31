@@ -116,7 +116,7 @@ light:
     name: "Master Bathroom Light 1"
     id: master_bathroom_light_1
     state:
-      data: [0x30, 0xdd, 0x00, 0x0e, 0x02]
+      data: [0x30, 0xd0, 0x00, 0x0e, 0x02]
       mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
     state_on:
       offset: 8
@@ -136,7 +136,7 @@ light:
     name: "Master Bathroom Light 2"
     id: master_bathroom_light_2
     state:
-      data: [0x30, 0xdd, 0x00, 0x0e, 0x02]
+      data: [0x30, 0xd0, 0x00, 0x0e, 0x02]
       mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
     state_on:
       offset: 9
@@ -156,7 +156,7 @@ light:
     name: "Master Bathroom Light 3"
     id: master_bathroom_light_3
     state:
-      data: [0x30, 0xdd, 0x00, 0x0e, 0x02]
+      data: [0x30, 0xd0, 0x00, 0x0e, 0x02]
       mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
     state_on:
       offset: 10
@@ -216,7 +216,7 @@ light:
     name: "Guest Bathroom Light 1"
     id: guest_bathroom_light_1
     state:
-      data: [0x30, 0xdd, 0x00, 0x0e, 0x05]
+      data: [0x30, 0xd0, 0x00, 0x0e, 0x05]
       mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
     state_on:
       offset: 8
@@ -236,7 +236,7 @@ light:
     name: "Guest Bathroom Light 2"
     id: guest_bathroom_light_2
     state:
-      data: [0x30, 0xdd, 0x00, 0x0e, 0x05]
+      data: [0x30, 0xd0, 0x00, 0x0e, 0x05]
       mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
     state_on:
       offset: 9
@@ -256,7 +256,7 @@ light:
     name: "Kitchen Light 1"
     id: kitchen_light_1
     state:
-      data: [0x30, 0xdd, 0x00, 0x0e, 0x06]
+      data: [0x30, 0xd0, 0x00, 0x0e, 0x06]
       mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
     state_on:
       offset: 8
@@ -275,7 +275,7 @@ light:
     name: "Kitchen Light 2"
     id: kitchen_light_2
     state:
-      data: [0x30, 0xdd, 0x00, 0x0e, 0x06]
+      data: [0x30, 0xd0, 0x00, 0x0e, 0x06]
       mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
     state_on:
       offset: 9
@@ -488,8 +488,7 @@ switch:
                                 0x00,
                                 0xff,
                                 0x00,
-                                0x00,
-                                0x00,
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccgit pull
                                 0x00,
                               ]
                             ack: [0x30, 0xdc]
