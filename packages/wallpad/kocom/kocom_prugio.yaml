@@ -1,0 +1,1101 @@
+uart:
+  id: uart_bus
+  baud_rate: 9600
+  data_bits: 8
+  parity: NONE
+  stop_bits: 1
+  rx_pin: GPIO22
+  tx_pin: GPIO19
+  debug:
+    direction: BOTH
+    dummy_receiver: false
+    after:
+      delimiter: [0x0D, 0x0D]
+    sequence:
+      - lambda: |-
+          ESP_LOGI("uart_debug", "Direction: %s, Bytes: %s", 
+            direction == uart::UART_DIRECTION_RX ? "RX" : "TX",
+            format_hex_pretty(bytes).c_str());
+
+external_components:
+  - source: github://eigger/espcomponents@latest
+    components: [uartex]
+    refresh: always
+
+uartex:
+  rx_timeout: 10ms
+  tx_delay: 50ms
+  tx_timeout: 500ms
+  tx_retry_cnt: 3
+
+  rx_header: [0xAA, 0x55]
+  rx_footer: [0x0D, 0x0D]
+  tx_header: [0xAA, 0x55]
+  tx_footer: [0x0D, 0x0D]
+
+  rx_checksum: add_no_header
+  tx_checksum: add_no_header
+
+  version:
+    disabled: False
+  error:
+    disabled: False
+  log:
+    disabled: False
+
+# 로그 설정 - 디버깅용
+logger:
+  level: DEBUG
+  logs:
+    uart_debug: DEBUG
+    uartex: DEBUG
+
+light:
+  # 거실 조명 (Room 0) - 단일 조명
+  - platform: uartex
+    name: "Living Room Light"
+    id: living_room_light
+    state:
+      data: [0x30, 0xd0, 0x00, 0x0e, 0x00]
+      mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
+    state_on:
+      offset: 8
+      data: [0xff]
+    state_off:
+      offset: 8
+      data: [0x00]
+    command_on:
+      data: [0x30, 0xbc, 0x00, 0x0e, 0x00, 0x00, 0x00, 0x00, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
+      ack: [0x30, 0xdc]
+    command_off:
+      data: [0x30, 0xbc, 0x00, 0x0e, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
+      ack: [0x30, 0xdc]
+
+  # 안방 조명 1 (Room 1)
+  - platform: uartex
+    name: "Master Bedroom Light 1"
+    id: master_bedroom_light_1
+    state:
+      data: [0x30, 0xd0, 0x00, 0x0e, 0x01]
+      mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
+    state_on:
+      offset: 8
+      data: [0xff]
+    state_off:
+      offset: 8
+      data: [0x00]
+    command_on:
+      data: [0x30, 0xbc, 0x00, 0x0e, 0x01, 0x00, 0x00, 0x00, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
+      ack: [0x30, 0xdc]
+    command_off:
+      data: [0x30, 0xbc, 0x00, 0x0e, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
+      ack: [0x30, 0xdc]
+
+  # 안방 조명 2 (Room 1)
+  - platform: uartex
+    name: "Master Bedroom Light 2"
+    id: master_bedroom_light_2
+    state:
+      data: [0x30, 0xd0, 0x00, 0x0e, 0x01]
+      mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
+    state_on:
+      offset: 9
+      data: [0xff]
+    state_off:
+      offset: 9
+      data: [0x00]
+    command_on:
+      data: [0x30, 0xbc, 0x00, 0x0e, 0x01, 0x00, 0x00, 0x00, 0x00, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
+      ack: [0x30, 0xdc]
+    command_off:
+      data: [0x30, 0xbc, 0x00, 0x0e, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
+      ack: [0x30, 0xdc]
+
+  # 안방화장실 조명 1 (Room 2)
+  - platform: uartex
+    name: "Master Bathroom Light 1"
+    id: master_bathroom_light_1
+    state:
+      data: [0x30, 0xd0, 0x00, 0x0e, 0x02]
+      mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
+    state_on:
+      offset: 8
+      data: [0xff]
+    state_off:
+      offset: 8
+      data: [0x00]
+    command_on:
+      data: [0x30, 0xbc, 0x00, 0x0e, 0x02, 0x00, 0x00, 0x00, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
+      ack: [0x30, 0xdc]
+    command_off:
+      data: [0x30, 0xbc, 0x00, 0x0e, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
+      ack: [0x30, 0xdc]
+
+  # 안방화장실 조명 2 (Room 2)
+  - platform: uartex
+    name: "Master Bathroom Light 2"
+    id: master_bathroom_light_2
+    state:
+      data: [0x30, 0xd0, 0x00, 0x0e, 0x02]
+      mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
+    state_on:
+      offset: 9
+      data: [0xff]
+    state_off:
+      offset: 9
+      data: [0x00]
+    command_on:
+      data: [0x30, 0xbc, 0x00, 0x0e, 0x02, 0x00, 0x00, 0x00, 0x00, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
+      ack: [0x30, 0xdc]
+    command_off:
+      data: [0x30, 0xbc, 0x00, 0x0e, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
+      ack: [0x30, 0xdc]
+
+  # 안방화장실 조명 3 (Room 2)
+  - platform: uartex
+    name: "Master Bathroom Light 3"
+    id: master_bathroom_light_3
+    state:
+      data: [0x30, 0xd0, 0x00, 0x0e, 0x02]
+      mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
+    state_on:
+      offset: 10
+      data: [0xff]
+    state_off:
+      offset: 10
+      data: [0x00]
+    command_on:
+      data: [0x30, 0xbc, 0x00, 0x0e, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00]
+      ack: [0x30, 0xdc]
+    command_off:
+      data: [0x30, 0xbc, 0x00, 0x0e, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
+      ack: [0x30, 0xdc]
+
+  # 아이방 조명 (Room 3)
+  - platform: uartex
+    name: "Kids Room Light"
+    id: kids_room_light
+    state:
+      data: [0x30, 0xd0, 0x00, 0x0e, 0x03]
+      mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
+    state_on:
+      offset: 8
+      data: [0xff]
+    state_off:
+      offset: 8
+      data: [0x00]
+    command_on:
+      data: [0x30, 0xbc, 0x00, 0x0e, 0x03, 0x00, 0x00, 0x00, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
+      ack: [0x30, 0xdc]
+    command_off:
+      data: [0x30, 0xbc, 0x00, 0x0e, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
+      ack: [0x30, 0xdc]
+
+  # 옷방 조명 (Room 4)
+  - platform: uartex
+    name: "Dressing Room Light"
+    id: dressing_room_light
+    state:
+      data: [0x30, 0xd0, 0x00, 0x0e, 0x04]
+      mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
+    state_on:
+      offset: 8
+      data: [0xff]
+    state_off:
+      offset: 8
+      data: [0x00]
+    command_on:
+      data: [0x30, 0xbc, 0x00, 0x0e, 0x04, 0x00, 0x00, 0x00, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
+      ack: [0x30, 0xdc]
+    command_off:
+      data: [0x30, 0xbc, 0x00, 0x0e, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
+      ack: [0x30, 0xdc]
+
+  # 거실화장실 조명 1 (Room 5)
+  - platform: uartex
+    name: "Guest Bathroom Light 1"
+    id: guest_bathroom_light_1
+    state:
+      data: [0x30, 0xd0, 0x00, 0x0e, 0x05]
+      mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
+    state_on:
+      offset: 8
+      data: [0xff]
+    state_off:
+      offset: 8
+      data: [0x00]
+    command_on:
+      data: [0x30, 0xbc, 0x00, 0x0e, 0x05, 0x00, 0x00, 0x00, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
+      ack: [0x30, 0xdc]
+    command_off:
+      data: [0x30, 0xbc, 0x00, 0x0e, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
+      ack: [0x30, 0xdc]
+
+  # 거실화장실 조명 2 (Room 5)
+  - platform: uartex
+    name: "Guest Bathroom Light 2"
+    id: guest_bathroom_light_2
+    state:
+      data: [0x30, 0xd0, 0x00, 0x0e, 0x05]
+      mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
+    state_on:
+      offset: 9
+      data: [0xff]
+    state_off:
+      offset: 9
+      data: [0x00]
+    command_on:
+      data: [0x30, 0xbc, 0x00, 0x0e, 0x05, 0x00, 0x00, 0x00, 0x00, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
+      ack: [0x30, 0xdc]
+    command_off:
+      data: [0x30, 0xbc, 0x00, 0x0e, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
+      ack: [0x30, 0xdc]
+
+  # 주방 조명 (Room 6)
+  - platform: uartex
+    name: "Kitchen Light 1"
+    id: kitchen_light_1
+    state:
+      data: [0x30, 0xd0, 0x00, 0x0e, 0x06]
+      mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
+    state_on:
+      offset: 8
+      data: [0xff]
+    state_off:
+      offset: 8
+      data: [0x00]
+    command_on:
+      data: [0x30, 0xbc, 0x00, 0x0e, 0x06, 0x00, 0x00, 0x00, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
+      ack: [0x30, 0xdc]
+    command_off:
+      data: [0x30, 0xbc, 0x00, 0x0e, 0x06, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
+      ack: [0x30, 0xdc]
+
+  - platform: uartex
+    name: "Kitchen Light 2"
+    id: kitchen_light_2
+    state:
+      data: [0x30, 0xd0, 0x00, 0x0e, 0x06]
+      mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
+    state_on:
+      offset: 9
+      data: [0xff]
+    state_off:
+      offset: 9
+      data: [0x00]
+    command_on:
+      data: [0x30, 0xbc, 0x00, 0x0e, 0x06, 0x00, 0x00, 0x00, 0x00, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
+      ack: [0x30, 0xdc]
+    command_off:
+      data: [0x30, 0xbc, 0x00, 0x0e, 0x06, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
+      ack: [0x30, 0xdc]
+
+switch:
+  # 거실화장실 환기팬 (Room 5) - 조명과 같은 디바이스지만 다른 offset 사용
+  - platform: template
+    name: "Guest Bathroom Ventilation"
+    id: guest_bathroom_ventilation
+    optimistic: true
+    restore_mode: DISABLED
+    turn_on_action:
+      # 현재 조명 상태를 유지하면서 환기팬만 켜기
+      - if:
+          condition:
+            light.is_on: guest_bathroom_light_1
+          then:
+            - if:
+                condition:
+                  light.is_on: guest_bathroom_light_2
+                then:
+                  # 조명 1,2 모두 켜져있음 + 환기팬 켜기
+                  - uartex.write:
+                      data:
+                        [0x30, 0xbc, 0x00, 0x0e, 0x05, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00]
+                      ack: [0x30, 0xdc]
+                else:
+                  # 조명 1만 켜져있음 + 환기팬 켜기
+                  - uartex.write:
+                      data:
+                        [0x30, 0xbc, 0x00, 0x0e, 0x05, 0x00, 0x00, 0x00, 0xff, 0x00, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00]
+                      ack: [0x30, 0xdc]
+          else:
+            - if:
+                condition:
+                  light.is_on: guest_bathroom_light_2
+                then:
+                  # 조명 2만 켜져있음 + 환기팬 켜기
+                  - uartex.write:
+                      data:
+                        [0x30, 0xbc, 0x00, 0x0e, 0x05, 0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00]
+                      ack: [0x30, 0xdc]
+                else:
+                  # 조명 모두 꺼져있음 + 환기팬만 켜기
+                  - uartex.write:
+                      data:
+                        [0x30, 0xbc, 0x00, 0x0e, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00]
+                      ack: [0x30, 0xdc]
+      - logger.log: "거실화장실 환기팬 켜짐 (조명 상태 유지)"
+    turn_off_action:
+      # 현재 조명 상태를 유지하면서 환기팬만 끄기
+      - if:
+          condition:
+            light.is_on: guest_bathroom_light_1
+          then:
+            - if:
+                condition:
+                  light.is_on: guest_bathroom_light_2
+                then:
+                  # 조명 1,2 모두 켜져있음 + 환기팬 끄기
+                  - uartex.write:
+                      data:
+                        [0x30, 0xbc, 0x00, 0x0e, 0x05, 0x00, 0x00, 0x00, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
+                      ack: [0x30, 0xdc]
+                else:
+                  # 조명 1만 켜져있음 + 환기팬 끄기
+                  - uartex.write:
+                      data:
+                        [0x30, 0xbc, 0x00, 0x0e, 0x05, 0x00, 0x00, 0x00, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
+                      ack: [0x30, 0xdc]
+          else:
+            - if:
+                condition:
+                  light.is_on: guest_bathroom_light_2
+                then:
+                  # 조명 2만 켜져있음 + 환기팬 끄기
+                  - uartex.write:
+                      data:
+                        [0x30, 0xbc, 0x00, 0x0e, 0x05, 0x00, 0x00, 0x00, 0x00, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
+                      ack: [0x30, 0xdc]
+                else:
+                  # 조명 모두 꺼져있음 + 환기팬만 끄기
+                  - uartex.write:
+                      data:
+                        [0x30, 0xbc, 0x00, 0x0e, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
+                      ack: [0x30, 0xdc]
+      - logger.log: "거실화장실 환기팬 꺼짐 (조명 상태 유지)"
+    on_turn_on:
+      - logger.log: "거실화장실 환기팬 켜짐"
+    on_turn_off:
+      - logger.log: "거실화장실 환기팬 꺼짐"
+
+  # 안방화장실 환기팬 (Room 2) - 조명과 같은 디바이스지만 다른 offset 사용
+  - platform: template
+    name: "Master Bathroom Ventilation"
+    id: master_bathroom_ventilation
+    optimistic: true
+    restore_mode: DISABLED
+    turn_on_action:
+      # 현재 조명 상태를 유지하면서 환기팬만 켜기
+      - if:
+          condition:
+            light.is_on: master_bathroom_light_1
+          then:
+            - if:
+                condition:
+                  light.is_on: master_bathroom_light_2
+                then:
+                  - if:
+                      condition:
+                        light.is_on: master_bathroom_light_3
+                      then:
+                        # 조명 1,2,3 모두 켜져있음 + 환기팬 켜기
+                        - uartex.write:
+                            data:
+                              [
+                                0x30,
+                                0xbc,
+                                0x00,
+                                0x0e,
+                                0x02,
+                                0x01,
+                                0x00,
+                                0x00,
+                                0xff,
+                                0xff,
+                                0xff,
+                                0xff,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                              ]
+                            ack: [0x30, 0xdc]
+                      else:
+                        # 조명 1,2만 켜져있음 + 환기팬 켜기
+                        - uartex.write:
+                            data:
+                              [
+                                0x30,
+                                0xbc,
+                                0x00,
+                                0x0e,
+                                0x02,
+                                0x01,
+                                0x00,
+                                0x00,
+                                0xff,
+                                0xff,
+                                0x00,
+                                0xff,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                              ]
+                            ack: [0x30, 0xdc]
+                else:
+                  - if:
+                      condition:
+                        light.is_on: master_bathroom_light_3
+                      then:
+                        # 조명 1,3만 켜져있음 + 환기팬 켜기
+                        - uartex.write:
+                            data:
+                              [
+                                0x30,
+                                0xbc,
+                                0x00,
+                                0x0e,
+                                0x02,
+                                0x01,
+                                0x00,
+                                0x00,
+                                0xff,
+                                0x00,
+                                0xff,
+                                0xff,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                              ]
+                            ack: [0x30, 0xdc]
+                      else:
+                        # 조명 1만 켜져있음 + 환기팬 켜기
+                        - uartex.write:
+                            data:
+                              [0x30, 0xbc, 0x00, 0x0e, 0x02, 0x00, 0x00, 0x00, 0xff, 0x00, 0x00, 0xff, 0x00, 0x00, 0x00]
+                            ack: [0x30, 0xdc]
+          else:
+            - if:
+                condition:
+                  light.is_on: master_bathroom_light_2
+                then:
+                  - if:
+                      condition:
+                        light.is_on: master_bathroom_light_3
+                      then:
+                        # 조명 2,3만 켜져있음 + 환기팬 켜기
+                        - uartex.write:
+                            data:
+                              [
+                                0x30,
+                                0xbc,
+                                0x00,
+                                0x0e,
+                                0x02,
+                                0x01,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0xff,
+                                0xff,
+                                0xff,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                              ]
+                            ack: [0x30, 0xdc]
+                      else:
+                        # 조명 2만 켜져있음 + 환기팬 켜기
+                        - uartex.write:
+                            data:
+                              [
+                                0x30,
+                                0xbc,
+                                0x00,
+                                0x0e,
+                                0x02,
+                                0x01,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0xff,
+                                0x00,
+                                0xff,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                              ]
+                            ack: [0x30, 0xdc]
+                else:
+                  - if:
+                      condition:
+                        light.is_on: master_bathroom_light_3
+                      then:
+                        # 조명 3만 켜져있음 + 환기팬 켜기
+                        - uartex.write:
+                            data:
+                              [
+                                0x30,
+                                0xbc,
+                                0x00,
+                                0x0e,
+                                0x02,
+                                0x01,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0xff,
+                                0xff,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                              ]
+                            ack: [0x30, 0xdc]
+                      else:
+                        # 조명 모두 꺼져있음 + 환기팬만 켜기
+                        - uartex.write:
+                            data:
+                              [
+                                0x30,
+                                0xbc,
+                                0x00,
+                                0x0e,
+                                0x02,
+                                0x01,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0xff,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                              ]
+                            ack: [0x30, 0xdc]
+      - logger.log: "안방화장실 환기팬 켜짐 (조명 상태 유지)"
+    turn_off_action:
+      # 현재 조명 상태를 유지하면서 환기팬만 끄기
+      - if:
+          condition:
+            light.is_on: master_bathroom_light_1
+          then:
+            - if:
+                condition:
+                  light.is_on: master_bathroom_light_2
+                then:
+                  - if:
+                      condition:
+                        light.is_on: master_bathroom_light_3
+                      then:
+                        # 조명 1,2,3 모두 켜져있음 + 환기팬 끄기
+                        - uartex.write:
+                            data:
+                              [
+                                0x30,
+                                0xbc,
+                                0x00,
+                                0x0e,
+                                0x02,
+                                0x01,
+                                0x00,
+                                0x00,
+                                0xff,
+                                0xff,
+                                0xff,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                              ]
+                            ack: [0x30, 0xdc]
+                      else:
+                        # 조명 1,2만 켜져있음 + 환기팬 끄기
+                        - uartex.write:
+                            data:
+                              [
+                                0x30,
+                                0xbc,
+                                0x00,
+                                0x0e,
+                                0x02,
+                                0x01,
+                                0x00,
+                                0x00,
+                                0xff,
+                                0xff,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                              ]
+                            ack: [0x30, 0xdc]
+                else:
+                  - if:
+                      condition:
+                        light.is_on: master_bathroom_light_3
+                      then:
+                        # 조명 1,3만 켜져있음 + 환기팬 끄기
+                        - uartex.write:
+                            data:
+                              [
+                                0x30,
+                                0xbc,
+                                0x00,
+                                0x0e,
+                                0x02,
+                                0x01,
+                                0x00,
+                                0x00,
+                                0xff,
+                                0x00,
+                                0xff,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                              ]
+                            ack: [0x30, 0xdc]
+                      else:
+                        # 조명 1만 켜져있음 + 환기팬 끄기
+                        - uartex.write:
+                            data:
+                              [
+                                0x30,
+                                0xbc,
+                                0x00,
+                                0x0e,
+                                0x02,
+                                0x01,
+                                0x00,
+                                0x00,
+                                0xff,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                              ]
+                            ack: [0x30, 0xdc]
+          else:
+            - if:
+                condition:
+                  light.is_on: master_bathroom_light_2
+                then:
+                  - if:
+                      condition:
+                        light.is_on: master_bathroom_light_3
+                      then:
+                        # 조명 2,3만 켜져있음 + 환기팬 끄기
+                        - uartex.write:
+                            data:
+                              [
+                                0x30,
+                                0xbc,
+                                0x00,
+                                0x0e,
+                                0x02,
+                                0x01,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0xff,
+                                0xff,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                              ]
+                            ack: [0x30, 0xdc]
+                      else:
+                        # 조명 2만 켜져있음 + 환기팬 끄기
+                        - uartex.write:
+                            data:
+                              [
+                                0x30,
+                                0xbc,
+                                0x00,
+                                0x0e,
+                                0x02,
+                                0x01,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0xff,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                              ]
+                            ack: [0x30, 0xdc]
+                else:
+                  - if:
+                      condition:
+                        light.is_on: master_bathroom_light_3
+                      then:
+                        # 조명 3만 켜져있음 + 환기팬 끄기
+                        - uartex.write:
+                            data:
+                              [
+                                0x30,
+                                0xbc,
+                                0x00,
+                                0x0e,
+                                0x02,
+                                0x01,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0xff,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                              ]
+                            ack: [0x30, 0xdc]
+                      else:
+                        # 조명 모두 꺼져있음 + 환기팬만 끄기
+                        - uartex.write:
+                            data:
+                              [
+                                0x30,
+                                0xbc,
+                                0x00,
+                                0x0e,
+                                0x02,
+                                0x01,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                              ]
+                            ack: [0x30, 0xdc]
+      - logger.log: "안방화장실 환기팬 꺼짐 (조명 상태 유지)"
+    on_turn_on:
+      - logger.log: "안방화장실 환기팬 켜짐"
+    on_turn_off:
+      - logger.log: "안방화장실 환기팬 꺼짐"
+
+  # 거실 전체 환풍기 (Room 0) - 0x48 디바이스 사용
+  - platform: uartex
+    name: "Living Room Ventilation"
+    id: living_room_ventilation
+    state:
+      data: [0x30, 0xdc, 0x00, 0x48, 0x00]
+      mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
+    state_on:
+      offset: 12
+      data: [0x40]
+    state_off:
+      offset: 12
+      data: [0x00]
+    command_on:
+      data: [0x30, 0xbc, 0x00, 0x48, 0x00, 0x01, 0x00, 0x00, 0x11, 0x01, 0x00, 0x00, 0x40, 0x00, 0x00, 0x00]
+      ack: [0x30, 0xdc]
+    command_off:
+      data: [0x30, 0xbc, 0x00, 0x48, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
+      ack: [0x30, 0xdc]
+    on_turn_on:
+      - logger.log: "거실 전체 환풍기 켜짐 (0x48 디바이스)"
+    on_turn_off:
+      - logger.log: "거실 전체 환풍기 꺼짐 (0x48 디바이스)"
+
+climate:
+  # 거실 난방 (Room 0) - 프리셋 모드로만 제어 (전원 버튼 없음)
+  - platform: uartex
+    name: "Living Room Heater"
+    id: living_room_heater
+    visual:
+      min_temperature: 10 °C
+      max_temperature: 30 °C
+      temperature_step: 1 °C
+    state:
+      data: [0x30, 0xd0, 0x00, 0x36, 0x00]
+      mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
+    state_temperature_current:
+      offset: 12
+      length: 1
+      precision: 0
+    state_temperature_target:
+      offset: 10
+      length: 1
+      precision: 0
+    state_heat:
+      offset: 8
+      data: [0x11] # 난방 상태 (0x11만 체크)
+    state_off:
+      offset: 8
+      data: [0x00] # 꺼진 상태
+    state_preset_away:
+      offset: 9
+      data: [0x01]
+    state_preset_none:
+      offset: 9
+      data: [0x00]
+    command_heat: !lambda |-
+      uint8_t target = id(living_room_heater).target_temperature;
+      uint8_t preset = id(living_room_heater).preset == climate::CLIMATE_PRESET_AWAY ? 0x01 : 0x00;
+      return {{0x30, 0xbc, 0x00, 0x36, 0x00, 0x01, 0x00, 0x00, 0x11, preset, target, 0x00, 0x00, 0x00, 0x00, 0x00},{0x30, 0xdc}};
+    command_preset_none: !lambda |-
+      uint8_t target = id(living_room_heater).target_temperature;
+      return {{0x30, 0xbc, 0x00, 0x36, 0x00, 0x01, 0x00, 0x00, 0x11, 0x00, target, 0x00, 0x00, 0x00, 0x00, 0x00},{0x30, 0xdc}};
+    command_preset_away: !lambda |-
+      uint8_t target = id(living_room_heater).target_temperature;
+      return {{0x30, 0xbc, 0x00, 0x36, 0x00, 0x01, 0x00, 0x00, 0x11, 0x01, target, 0x00, 0x00, 0x00, 0x00, 0x00},{0x30, 0xdc}};
+    command_temperature: !lambda |-
+      uint8_t target = x;
+      uint8_t preset = id(living_room_heater).preset == climate::CLIMATE_PRESET_AWAY ? 0x01 : 0x00;
+      return {{0x30, 0xbc, 0x00, 0x36, 0x00, 0x01, 0x00, 0x00, 0x11, preset, target, 0x00, 0x00, 0x00, 0x00, 0x00},{0x30, 0xdc}};
+    on_state:
+      - logger.log:
+          format: "거실 보일러 상태 변경: 모드=%s, 목표온도=%.0f°C, 현재온도=%.0f°C, 프리셋=%s"
+          args:
+            - 'x.mode == CLIMATE_MODE_HEAT ? "난방" : x.mode == CLIMATE_MODE_OFF ? "꺼짐" : "알수없음"'
+            - "x.target_temperature"
+            - "x.current_temperature"
+            - 'x.preset == CLIMATE_PRESET_AWAY ? "외출" : "일반"'
+
+  # 안방 난방 (Room 1) - 프리셋 모드로만 제어 (전원 버튼 없음)
+  - platform: uartex
+    name: "Master Bedroom Heater"
+    id: master_bedroom_heater
+    visual:
+      min_temperature: 10 °C
+      max_temperature: 30 °C
+      temperature_step: 1 °C
+    state:
+      data: [0x30, 0xd0, 0x00, 0x36, 0x01]
+      mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
+    state_temperature_current:
+      offset: 12
+      length: 1
+      precision: 0
+    state_temperature_target:
+      offset: 10
+      length: 1
+      precision: 0
+    state_heat:
+      offset: 8
+      data: [0x11] # 난방 상태 (0x11만 체크)
+    state_off:
+      offset: 8
+      data: [0x00] # 꺼진 상태
+    state_preset_away:
+      offset: 9
+      data: [0x01]
+    state_preset_none:
+      offset: 9
+      data: [0x00]
+    command_heat: !lambda |-
+      uint8_t target = id(master_bedroom_heater).target_temperature;
+      uint8_t preset = id(master_bedroom_heater).preset == climate::CLIMATE_PRESET_AWAY ? 0x01 : 0x00;
+      return {{0x30, 0xbc, 0x00, 0x36, 0x01, 0x01, 0x00, 0x00, 0x11, preset, target, 0x00, 0x00, 0x00, 0x00, 0x00},{0x30, 0xdc}};
+    command_preset_none: !lambda |-
+      uint8_t target = id(master_bedroom_heater).target_temperature;
+      return {{0x30, 0xbc, 0x00, 0x36, 0x01, 0x01, 0x00, 0x00, 0x11, 0x00, target, 0x00, 0x00, 0x00, 0x00, 0x00},{0x30, 0xdc}};
+    command_preset_away: !lambda |-
+      uint8_t target = id(master_bedroom_heater).target_temperature;
+      return {{0x30, 0xbc, 0x00, 0x36, 0x01, 0x01, 0x00, 0x00, 0x11, 0x01, target, 0x00, 0x00, 0x00, 0x00, 0x00},{0x30, 0xdc}};
+    command_temperature: !lambda |-
+      uint8_t target = x;
+      uint8_t preset = id(master_bedroom_heater).preset == climate::CLIMATE_PRESET_AWAY ? 0x01 : 0x00;
+      return {{0x30, 0xbc, 0x00, 0x36, 0x01, 0x01, 0x00, 0x00, 0x11, preset, target, 0x00, 0x00, 0x00, 0x00, 0x00},{0x30, 0xdc}};
+    on_state:
+      - logger.log:
+          format: "안방 보일러 상태 변경: 모드=%s, 목표온도=%.0f°C, 현재온도=%.0f°C, 프리셋=%s"
+          args:
+            - 'x.mode == CLIMATE_MODE_HEAT ? "난방" : x.mode == CLIMATE_MODE_OFF ? "꺼짐" : "알수없음"'
+            - "x.target_temperature"
+            - "x.current_temperature"
+            - 'x.preset == CLIMATE_PRESET_AWAY ? "외출" : "일반"'
+
+  # 옷방 난방 (Room 3) - 프리셋 모드로만 제어 (전원 버튼 없음)
+  - platform: uartex
+    name: "Room 2 Heater"
+    id: room2_heater
+    visual:
+      min_temperature: 10 °C
+      max_temperature: 30 °C
+      temperature_step: 1 °C
+    state:
+      data: [0x30, 0xd0, 0x00, 0x36, 0x03]
+      mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
+    state_temperature_current:
+      offset: 12
+      length: 1
+      precision: 0
+    state_temperature_target:
+      offset: 10
+      length: 1
+      precision: 0
+    state_heat:
+      offset: 8
+      data: [0x11] # 난방 상태 (0x11만 체크)
+    state_off:
+      offset: 8
+      data: [0x00] # 꺼진 상태
+    state_preset_away:
+      offset: 9
+      data: [0x01]
+    state_preset_none:
+      offset: 9
+      data: [0x00]
+    command_heat: !lambda |-
+      uint8_t target = id(room2_heater).target_temperature;
+      uint8_t preset = id(room2_heater).preset == climate::CLIMATE_PRESET_AWAY ? 0x01 : 0x00;
+      return {{0x30, 0xbc, 0x00, 0x36, 0x03, 0x01, 0x00, 0x00, 0x11, preset, target, 0x00, 0x00, 0x00, 0x00, 0x00},{0x30, 0xdc}};
+    command_preset_none: !lambda |-
+      uint8_t target = id(room2_heater).target_temperature;
+      return {{0x30, 0xbc, 0x00, 0x36, 0x03, 0x01, 0x00, 0x00, 0x11, 0x00, target, 0x00, 0x00, 0x00, 0x00, 0x00},{0x30, 0xdc}};
+    command_preset_away: !lambda |-
+      uint8_t target = id(room2_heater).target_temperature;
+      return {{0x30, 0xbc, 0x00, 0x36, 0x03, 0x01, 0x00, 0x00, 0x11, 0x01, target, 0x00, 0x00, 0x00, 0x00, 0x00},{0x30, 0xdc}};
+    command_temperature: !lambda |-
+      uint8_t target = x;
+      uint8_t preset = id(room2_heater).preset == climate::CLIMATE_PRESET_AWAY ? 0x01 : 0x00;
+      return {{0x30, 0xbc, 0x00, 0x36, 0x03, 0x01, 0x00, 0x00, 0x11, preset, target, 0x00, 0x00, 0x00, 0x00, 0x00},{0x30, 0xdc}};
+    on_state:
+      - logger.log:
+          format: "옷방 보일러 상태 변경: 모드=%s, 목표온도=%.0f°C, 현재온도=%.0f°C, 프리셋=%s"
+          args:
+            - 'x.mode == CLIMATE_MODE_HEAT ? "난방" : x.mode == CLIMATE_MODE_OFF ? "꺼짐" : "알수없음"'
+            - "x.target_temperature"
+            - "x.current_temperature"
+            - 'x.preset == CLIMATE_PRESET_AWAY ? "외출" : "일반"'
+
+  # 연우방 난방 (Room 2) - 프리셋 모드로만 제어 (전원 버튼 없음)
+  - platform: uartex
+    name: "Room 1 Heater"
+    id: room1_heater
+    visual:
+      min_temperature: 10 °C
+      max_temperature: 30 °C
+      temperature_step: 1 °C
+    state:
+      data: [0x30, 0xd0, 0x00, 0x36, 0x02]
+      mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
+    state_temperature_current:
+      offset: 12
+      length: 1
+      precision: 0
+    state_temperature_target:
+      offset: 10
+      length: 1
+      precision: 0
+    state_heat:
+      offset: 8
+      data: [0x11] # 난방 상태 (0x11만 체크)
+    state_off:
+      offset: 8
+      data: [0x00] # 꺼진 상태
+    state_preset_away:
+      offset: 9
+      data: [0x01]
+    state_preset_none:
+      offset: 9
+      data: [0x00]
+    command_heat: !lambda |-
+      uint8_t target = id(room1_heater).target_temperature;
+      uint8_t preset = id(room1_heater).preset == climate::CLIMATE_PRESET_AWAY ? 0x01 : 0x00;
+      return {{0x30, 0xbc, 0x00, 0x36, 0x02, 0x01, 0x00, 0x00, 0x11, preset, target, 0x00, 0x00, 0x00, 0x00, 0x00},{0x30, 0xdc}};
+    command_preset_none: !lambda |-
+      uint8_t target = id(room1_heater).target_temperature;
+      return {{0x30, 0xbc, 0x00, 0x36, 0x02, 0x01, 0x00, 0x00, 0x11, 0x00, target, 0x00, 0x00, 0x00, 0x00, 0x00},{0x30, 0xdc}};
+    command_preset_away: !lambda |-
+      uint8_t target = id(room1_heater).target_temperature;
+      return {{0x30, 0xbc, 0x00, 0x36, 0x02, 0x01, 0x00, 0x00, 0x11, 0x01, target, 0x00, 0x00, 0x00, 0x00, 0x00},{0x30, 0xdc}};
+    command_temperature: !lambda |-
+      uint8_t target = x;
+      uint8_t preset = id(room1_heater).preset == climate::CLIMATE_PRESET_AWAY ? 0x01 : 0x00;
+      return {{0x30, 0xbc, 0x00, 0x36, 0x02, 0x01, 0x00, 0x00, 0x11, preset, target, 0x00, 0x00, 0x00, 0x00, 0x00},{0x30, 0xdc}};
+    on_state:
+      - logger.log:
+          format: "연우방 보일러 상태 변경: 모드=%s, 목표온도=%.0f°C, 현재온도=%.0f°C, 프리셋=%s"
+          args:
+            - 'x.mode == CLIMATE_MODE_HEAT ? "난방" : x.mode == CLIMATE_MODE_OFF ? "꺼짐" : "알수없음"'
+            - "x.target_temperature"
+            - "x.current_temperature"
+            - 'x.preset == CLIMATE_PRESET_AWAY ? "외출" : "일반"'
+
+binary_sensor:
+  # 현관 초인종 감지 (다양한 패턴 시도)
+  - platform: uartex
+    name: "Doorbell"
+    icon: "mdi:doorbell"
+    device_class: sound
+    state:
+      data: [0x30, 0xbc, 0x00, 0x60, 0x00] # 모션/도어벨 디바이스
+      mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
+    state_on:
+      offset: 8
+      data: [0x01]
+    state_off:
+      offset: 8
+      data: [0x00]
+    on_press:
+      - logger.log: "🔔 현관 초인종이 눌렸습니다!"
+    on_release:
+      - logger.log: "🔔 현관 초인종 신호 종료"
+
+  # 현관문 열림 감지 센서
+  - platform: uartex
+    name: "Front Door"
+    icon: "mdi:door"
+    device_class: door
+    state:
+      data: [0x30, 0xd0, 0x00, 0x60, 0x00] # 상태 조회 패턴
+      mask: [0xff, 0xf0, 0xff, 0xff, 0xff]
+    state_on:
+      offset: 8
+      data: [0x00] # 문 열림 (값 반전)
+    state_off:
+      offset: 8
+      data: [0x01] # 문 닫힘 (값 반전)
+    on_press:
+      - logger.log: "� 현관문이 종열렸습니다!"
+    on_release:
+      - logger.log: "🚪 현관문이 닫혔습니다!"
+
+button:
+  # 엘리베이터 호출
+  - platform: uartex
+    name: "Elevator Call"
+    icon: "mdi:elevator"
+    command_on:
+      data: [0x30, 0xbc, 0x00, 0x01, 0x00, 0x44, 0x00, 0x01, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
+      ack: [0x30, 0xdc]
+
+  # 전원 공급선만 활성화 (조명은 켜지지 않음)
+  - platform: template
+    name: "Power Supply Activate"
+    icon: "mdi:power-plug"
+    on_press:
+      # 전원 공급선만 활성화 - Room ID를 0x00으로 변경하여 일괄소등 방지
+      - uartex.write:
+          data: [0x30, 0xbc, 0x00, 0x0e, 0x00, 0x01, 0x00, 0x66, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
+          ack: [0x30, 0xdc]
+      - logger.log: "전원 공급선 활성화 (일괄소등 방지 적용)"
