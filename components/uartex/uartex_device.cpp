@@ -26,9 +26,9 @@ void UARTExDevice::uartex_dump_config(const char* TAG)
 
 const cmd_t *UARTExDevice::dequeue_tx_cmd()
 {
+    if (this->tx_cmd_queue_.empty()) return nullptr;
     if (get_state_response() && !this->rx_response_) return nullptr;
     this->rx_response_ = false;
-    if (this->tx_cmd_queue_.empty()) return nullptr;
     const cmd_t *cmd = this->tx_cmd_queue_.front();
     this->tx_cmd_queue_.pop();
     return cmd;
@@ -36,9 +36,9 @@ const cmd_t *UARTExDevice::dequeue_tx_cmd()
 
 const cmd_t *UARTExDevice::dequeue_tx_cmd_low_priority()
 {
+    if (this->tx_cmd_queue_low_priority_.empty()) return nullptr;
     if (get_state_response() && !this->rx_response_) return nullptr;
     this->rx_response_ = false;
-    if (this->tx_cmd_queue_low_priority_.empty()) return nullptr;
     const cmd_t *cmd = this->tx_cmd_queue_low_priority_.front();
     this->tx_cmd_queue_low_priority_.pop();
     return cmd;
@@ -63,7 +63,7 @@ std::vector<uint8_t> UARTExDevice::last_state()
 
 uint8_t UARTExDevice::last_state(const uint16_t index)
 {
-    if (index < 0 || index >= last_state_.size()) return 0;
+    if (index >= last_state_.size()) return 0;
     return last_state_[index];
 }
 
@@ -144,9 +144,24 @@ bool UARTExDevice::has_named_state(const std::string& name)
     return false;
 }
 
+const char* find_mode(const std::vector<const char*>& modes, const std::string& target)
+{
+    auto it = std::find_if(modes.begin(), modes.end(), [&](const char* m)
+        {
+            return m != nullptr && target == m;
+        }
+    );
+    if (it != modes.end()) {
+        return *it;
+    }
+    return nullptr;
+}
+
 bool equal(const std::vector<uint8_t>& data1, const std::vector<uint8_t>& data2, const uint16_t offset)
 {
-    if (data1.size() - offset < data2.size()) return false;
+    // Guard against unsigned underflow when offset exceeds data1.size(): that
+    // would make the size check pass and read out of bounds.
+    if (offset > data1.size() || data1.size() - offset < data2.size()) return false;
     return std::equal(data1.begin() + offset, data1.begin() + offset + data2.size(), data2.begin());
 }
 
@@ -171,6 +186,10 @@ std::vector<uint8_t> apply_mask(const std::vector<uint8_t>& data, const state_t*
 bool verify_state(const std::vector<uint8_t>& data, const state_t* state)
 {
     if (state == nullptr) return false;
+    if (state->match == MATCH_EXACT)
+    {
+        if (data.size() != state->offset + state->data.size()) return false;
+    }
     return equal(apply_mask(data, state), state->data, state->offset) ? !state->inverted : state->inverted;
 }
 
@@ -259,7 +278,7 @@ std::string to_ascii_string(const uint8_t* data, const uint16_t len)
         std::snprintf(buf, sizeof(buf), "%c", data[i]);
         ascii_str.append(buf);
     }
-    if (len > 120) ascii_str.append("...");
+    if (len > 240) ascii_str.append("...");
     char size_buf[16] = {0};
     std::snprintf(size_buf, sizeof(size_buf), "(%u)", len);
     ascii_str.append(size_buf);
@@ -282,13 +301,13 @@ std::vector<std::string> split(const std::string& str, const std::string& delimi
 
 std::string get_token(const std::vector<std::string>& tokens, size_t index, const std::string& default_val) 
 {
-    if (index < 0 || index >= tokens.size()) return default_val;
+    if (index >= tokens.size()) return default_val;
     return tokens[index];
 }
 
 bool check_value(const uint16_t index, const uint8_t value, const uint8_t* data, const uint16_t len)
 {
-    if (index < 0 || index >= len) return false;
+    if (index >= len) return false;
     return data[index] == value;
 }
 

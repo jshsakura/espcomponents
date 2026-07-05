@@ -209,12 +209,41 @@ sensor:
       decode: bcd
 
   - platform: uartex
-    name: "Total Power Usage" # 누적 전력 사용량 (kWh)
+    name: "Total Water Usage" # 누적 수도 사용량 (SUB ID: 0x01)
+    id: total_water
+    state: [0x30, 0x01, 0x81]
+    accuracy_decimals: 2
+    unit_of_measurement: "m³"
+    command_update: [0x30, 0x01, 0x01, 0x00]
+    state_number:
+      offset: 9
+      length: 3
+      precision: 2
+      signed: False
+      decode: bcd
+
+  - platform: uartex
+    name: "Total Gas Usage" # 누적 가스 사용량 (SUB ID: 0x02)
+    id: total_gas
+    state: [0x30, 0x02, 0x81]
+    accuracy_decimals: 2
+    unit_of_measurement: "m³"
+    command_update: [0x30, 0x02, 0x01, 0x00]
+    state_number:
+      offset: 9
+      length: 3
+      precision: 2
+      signed: False
+      decode: bcd
+
+  - platform: uartex
+    name: "Total Power Usage" # 누적 전력 사용량 (SUB ID: 0x03)
     id: total_power
-    state: [0x30, 0x03, 0x81] # 패킷 매칭
-    accuracy_decimals: 1 # 소수점 1자리로 설정
-    unit_of_measurement: "kWh" # 단위 추가
-    state_number: 
+    state: [0x30, 0x03, 0x81]
+    accuracy_decimals: 1
+    unit_of_measurement: "kWh"
+    command_update: [0x30, 0x03, 0x01, 0x00]
+    state_number:
       offset: 9
       length: 3
       precision: 1
@@ -222,13 +251,13 @@ sensor:
       decode: bcd
 
   - platform: uartex
-    name: "Total Water Usage" # 누적 수도 사용량
-    id: total_water
-    state: [0x30, 0x01, 0x81] # 패킷 매칭
-    accuracy_decimals: 2 # 소수점 2자리로 설정
-    unit_of_measurement: "m³" # 단위 수정
-    command_update: [0x30, 0x01, 0x01, 0x00]
-    state_number: 
+    name: "Total Hot Water Usage" # 누적 온수 사용량 (SUB ID: 0x04)
+    id: total_hot_water
+    state: [0x30, 0x04, 0x81]
+    accuracy_decimals: 2
+    unit_of_measurement: "m³"
+    command_update: [0x30, 0x04, 0x01, 0x00]
+    state_number:
       offset: 9
       length: 3
       precision: 2
@@ -236,161 +265,191 @@ sensor:
       decode: bcd
 
   - platform: uartex
-    name: "Total Gas Usage" # 누적 가스 사용량
-    id: total_gas
-    state: [0x30, 0x02, 0x81] # 패킷 매칭
-    accuracy_decimals: 2 # 소수점 2자리로 설정
-    unit_of_measurement: "m³" # 단위 수정
-    command_update: [0x30, 0x02, 0x01, 0x00]
-    state_number: 
+    name: "Total Heating Usage" # 누적 열량(난방) 사용량 (SUB ID: 0x05)
+    id: total_heating
+    state: [0x30, 0x05, 0x81]
+    accuracy_decimals: 2
+    unit_of_measurement: "MWh"
+    command_update: [0x30, 0x05, 0x01, 0x00]
+    state_number:
       offset: 9
       length: 3
       precision: 2
       signed: False
       decode: bcd
 
+  # 대기전력 차단기(0x39) 소비전력 — KS X 450X-13
+  # 패킷: [0x39][그룹][0x81][길이][DATA0][채널1 DATA1~3][채널2 DATA1~3][xor][add]
+  # DATA0 (offset 4): 에러 상태
+  # DATA1 상위 니블 (bit7~4, 전력 파싱 제외 — outlet switch에서 사용):
+  #   bit7: 1=자동차단 설정, 0=수동차단 설정
+  #   bit6: 1=자동차단 기준값 이내, 0=해당없음
+  #   bit5: 1=과부하, 0=해당없음
+  #   bit4: 1=채널 ON(전원공급), 0=채널 OFF(전원차단) — mask 0x10
+  # DATA1 하위 니블=1000W, DATA2=100W/10W, DATA3=1W/0.1W (BCD)
   - platform: uartex
     name: "power_1_1"
     id: power_1_1
     state: [0x39, 0x1f, 0x81]  # 패킷 매칭
-    accuracy_decimals: 1  # 소수점 1 자리로 설정
-    unit_of_measurement: "W"  # 단위 설정
-    state_number: 
-      offset: 5
-      length: 3
-      precision: 1
-      signed: False
-      decode: bcd
+    accuracy_decimals: 1
+    unit_of_measurement: "W"
+    lambda: !lambda |-
+      constexpr uint16_t o = 5;
+      if (len < o + 3) return 0;
+      uint8_t d1 = data[o], d2 = data[o + 1], d3 = data[o + 2];
+      uint8_t n0 = d1 & 0x0F, n1 = (d2 >> 4) & 0x0F, n2 = d2 & 0x0F;
+      uint8_t n3 = (d3 >> 4) & 0x0F, n4 = d3 & 0x0F;
+      if (n0 > 9 || n1 > 9 || n2 > 9 || n3 > 9 || n4 > 9) return 0;
+      return n0 * 1000.0f + n1 * 100.0f + n2 * 10.0f + n3 + n4 * 0.1f;
 
   - platform: uartex
     name: "power_1_2"
     id: power_1_2
     state: [0x39, 0x1f, 0x81]  # 패킷 매칭
     accuracy_decimals: 1
-    unit_of_measurement: "W"  # 단위 설정
-    state_number: 
-      offset: 8
-      length: 3
-      precision: 1
-      signed: False
-      decode: bcd
+    unit_of_measurement: "W"
+    lambda: !lambda |-
+      constexpr uint16_t o = 8;
+      if (len < o + 3) return 0;
+      uint8_t d1 = data[o], d2 = data[o + 1], d3 = data[o + 2];
+      uint8_t n0 = d1 & 0x0F, n1 = (d2 >> 4) & 0x0F, n2 = d2 & 0x0F;
+      uint8_t n3 = (d3 >> 4) & 0x0F, n4 = d3 & 0x0F;
+      if (n0 > 9 || n1 > 9 || n2 > 9 || n3 > 9 || n4 > 9) return 0;
+      return n0 * 1000.0f + n1 * 100.0f + n2 * 10.0f + n3 + n4 * 0.1f;
 
   - platform: uartex
     name: "power_2_1"
     id: power_2_1
     state: [0x39, 0x2f, 0x81]  # 패킷 매칭
     accuracy_decimals: 1
-    unit_of_measurement: "W"  # 단위 설정
-    state_number: 
-      offset: 5
-      length: 3
-      precision: 1
-      signed: False
-      decode: bcd
+    unit_of_measurement: "W"
+    lambda: !lambda |-
+      constexpr uint16_t o = 5;
+      if (len < o + 3) return 0;
+      uint8_t d1 = data[o], d2 = data[o + 1], d3 = data[o + 2];
+      uint8_t n0 = d1 & 0x0F, n1 = (d2 >> 4) & 0x0F, n2 = d2 & 0x0F;
+      uint8_t n3 = (d3 >> 4) & 0x0F, n4 = d3 & 0x0F;
+      if (n0 > 9 || n1 > 9 || n2 > 9 || n3 > 9 || n4 > 9) return 0;
+      return n0 * 1000.0f + n1 * 100.0f + n2 * 10.0f + n3 + n4 * 0.1f;
 
   - platform: uartex
     name: "power_2_2"
     id: power_2_2
     state: [0x39, 0x2f, 0x81]  # 패킷 매칭
     accuracy_decimals: 1
-    unit_of_measurement: "W"  # 단위 설정
-    state_number: 
-      offset: 8
-      length: 3
-      precision: 1
-      signed: False
-      decode: bcd
+    unit_of_measurement: "W"
+    lambda: !lambda |-
+      constexpr uint16_t o = 8;
+      if (len < o + 3) return 0;
+      uint8_t d1 = data[o], d2 = data[o + 1], d3 = data[o + 2];
+      uint8_t n0 = d1 & 0x0F, n1 = (d2 >> 4) & 0x0F, n2 = d2 & 0x0F;
+      uint8_t n3 = (d3 >> 4) & 0x0F, n4 = d3 & 0x0F;
+      if (n0 > 9 || n1 > 9 || n2 > 9 || n3 > 9 || n4 > 9) return 0;
+      return n0 * 1000.0f + n1 * 100.0f + n2 * 10.0f + n3 + n4 * 0.1f;
 
   - platform: uartex
     name: "power_3_1"
     id: power_3_1
     state: [0x39, 0x3f, 0x81]  # 패킷 매칭
     accuracy_decimals: 1
-    unit_of_measurement: "W"  # 단위 설정
-    state_number: 
-      offset: 5
-      length: 3
-      precision: 1
-      signed: False
-      decode: bcd
+    unit_of_measurement: "W"
+    lambda: !lambda |-
+      constexpr uint16_t o = 5;
+      if (len < o + 3) return 0;
+      uint8_t d1 = data[o], d2 = data[o + 1], d3 = data[o + 2];
+      uint8_t n0 = d1 & 0x0F, n1 = (d2 >> 4) & 0x0F, n2 = d2 & 0x0F;
+      uint8_t n3 = (d3 >> 4) & 0x0F, n4 = d3 & 0x0F;
+      if (n0 > 9 || n1 > 9 || n2 > 9 || n3 > 9 || n4 > 9) return 0;
+      return n0 * 1000.0f + n1 * 100.0f + n2 * 10.0f + n3 + n4 * 0.1f;
 
   - platform: uartex
     name: "power_3_2"
     id: power_3_2
     state: [0x39, 0x3f, 0x81]  # 패킷 매칭
     accuracy_decimals: 1
-    unit_of_measurement: "W"  # 단위 설정
-    state_number: 
-      offset: 8
-      length: 3
-      precision: 1
-      signed: False
-      decode: bcd
+    unit_of_measurement: "W"
+    lambda: !lambda |-
+      constexpr uint16_t o = 8;
+      if (len < o + 3) return 0;
+      uint8_t d1 = data[o], d2 = data[o + 1], d3 = data[o + 2];
+      uint8_t n0 = d1 & 0x0F, n1 = (d2 >> 4) & 0x0F, n2 = d2 & 0x0F;
+      uint8_t n3 = (d3 >> 4) & 0x0F, n4 = d3 & 0x0F;
+      if (n0 > 9 || n1 > 9 || n2 > 9 || n3 > 9 || n4 > 9) return 0;
+      return n0 * 1000.0f + n1 * 100.0f + n2 * 10.0f + n3 + n4 * 0.1f;
 
   - platform: uartex
     name: "power_4_1"
     id: power_4_1
     state: [0x39, 0x4f, 0x81]  # 패킷 매칭
     accuracy_decimals: 1
-    unit_of_measurement: "W"  # 단위 설정
-    state_number: 
-      offset: 5
-      length: 3
-      precision: 1
-      signed: False
-      decode: bcd
+    unit_of_measurement: "W"
+    lambda: !lambda |-
+      constexpr uint16_t o = 5;
+      if (len < o + 3) return 0;
+      uint8_t d1 = data[o], d2 = data[o + 1], d3 = data[o + 2];
+      uint8_t n0 = d1 & 0x0F, n1 = (d2 >> 4) & 0x0F, n2 = d2 & 0x0F;
+      uint8_t n3 = (d3 >> 4) & 0x0F, n4 = d3 & 0x0F;
+      if (n0 > 9 || n1 > 9 || n2 > 9 || n3 > 9 || n4 > 9) return 0;
+      return n0 * 1000.0f + n1 * 100.0f + n2 * 10.0f + n3 + n4 * 0.1f;
 
   - platform: uartex
     name: "power_4_2"
     id: power_4_2
     state: [0x39, 0x4f, 0x81]  # 패킷 매칭
     accuracy_decimals: 1
-    unit_of_measurement: "W"  # 단위 설정
-    state_number: 
-      offset: 8
-      length: 3
-      precision: 1
-      signed: False
-      decode: bcd
+    unit_of_measurement: "W"
+    lambda: !lambda |-
+      constexpr uint16_t o = 8;
+      if (len < o + 3) return 0;
+      uint8_t d1 = data[o], d2 = data[o + 1], d3 = data[o + 2];
+      uint8_t n0 = d1 & 0x0F, n1 = (d2 >> 4) & 0x0F, n2 = d2 & 0x0F;
+      uint8_t n3 = (d3 >> 4) & 0x0F, n4 = d3 & 0x0F;
+      if (n0 > 9 || n1 > 9 || n2 > 9 || n3 > 9 || n4 > 9) return 0;
+      return n0 * 1000.0f + n1 * 100.0f + n2 * 10.0f + n3 + n4 * 0.1f;
 
   - platform: uartex
     name: "power_8_1"
     id: power_8_1
     state: [0x39, 0x8f, 0x81]  # 패킷 매칭
     accuracy_decimals: 1
-    unit_of_measurement: "W"  # 단위 설정
-    state_number: 
-      offset: 5
-      length: 3
-      precision: 1
-      signed: False
-      decode: bcd
+    unit_of_measurement: "W"
+    lambda: !lambda |-
+      constexpr uint16_t o = 5;
+      if (len < o + 3) return 0;
+      uint8_t d1 = data[o], d2 = data[o + 1], d3 = data[o + 2];
+      uint8_t n0 = d1 & 0x0F, n1 = (d2 >> 4) & 0x0F, n2 = d2 & 0x0F;
+      uint8_t n3 = (d3 >> 4) & 0x0F, n4 = d3 & 0x0F;
+      if (n0 > 9 || n1 > 9 || n2 > 9 || n3 > 9 || n4 > 9) return 0;
+      return n0 * 1000.0f + n1 * 100.0f + n2 * 10.0f + n3 + n4 * 0.1f;
 
   - platform: uartex
     name: "power_8_2"
     id: power_8_2
     state: [0x39, 0x8f, 0x81]  # 패킷 매칭
     accuracy_decimals: 1
-    unit_of_measurement: "W"  # 단위 설정
-    state_number: 
-      offset: 8
-      length: 3
-      precision: 1
-      signed: False
-      decode: bcd
+    unit_of_measurement: "W"
+    lambda: !lambda |-
+      constexpr uint16_t o = 8;
+      if (len < o + 3) return 0;
+      uint8_t d1 = data[o], d2 = data[o + 1], d3 = data[o + 2];
+      uint8_t n0 = d1 & 0x0F, n1 = (d2 >> 4) & 0x0F, n2 = d2 & 0x0F;
+      uint8_t n3 = (d3 >> 4) & 0x0F, n4 = d3 & 0x0F;
+      if (n0 > 9 || n1 > 9 || n2 > 9 || n3 > 9 || n4 > 9) return 0;
+      return n0 * 1000.0f + n1 * 100.0f + n2 * 10.0f + n3 + n4 * 0.1f;
 
 switch:
+  # outlet ON/OFF: DATA1 bit4 (mask 0x10), 상위 상태 비트 정의는 power 센서 주석 참고
   - platform: uartex
     name: "outlet_1_1"
     id: outlet_1_1
     state: [0x39, 0x1f, 0x81]
     state_on:
-      offset: 5
-      mask: [0x10]
+      offset: 5   # 채널1 DATA1
+      mask: [0x10]  # bit4: 채널 ON
       data: [0x10]
     state_off:
       offset: 5
-      mask: [0x10]
+      mask: [0x10]  # bit4: 채널 OFF
       data: [0x00]
     command_on:
       data: [0x39, 0x11, 0x41, 0x01, 0x11]
@@ -404,12 +463,12 @@ switch:
     id: outlet_1_2
     state: [0x39, 0x1f, 0x81]
     state_on:
-      offset: 8
-      mask: [0x10]
+      offset: 8   # 채널2 DATA1
+      mask: [0x10]  # bit4: 채널 ON
       data: [0x10]
     state_off:
       offset: 8
-      mask: [0x10]
+      mask: [0x10]  # bit4: 채널 OFF
       data: [0x00]
     command_on:
       data: [0x39, 0x12, 0x41, 0x01, 0x11]

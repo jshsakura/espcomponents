@@ -1,7 +1,3 @@
-esphome:
-  name: "${name}"
-  friendly_name: "${friendly_name}"
-
 esp32:
   board: esp32doit-devkit-v1
   framework:
@@ -15,41 +11,9 @@ ethernet:
   clk_mode: GPIO0_IN
   phy_addr: 1
   power_pin: GPIO5
-  
-# Enable logging
-logger:
-  level: ERROR
-
-api:
-
-ota:
-  platform: esphome
-  password: !secret ota_password
-
-text_sensor:
-  - platform: ethernet_info
-    ip_address:
-      name: "IP"
-      icon: mdi:ip-outline
-
-time:
-  - platform: sntp
-    id: sntp_time
-    timezone: Asia/Seoul
-    servers: 
-      - 0.pool.ntp.org
-      - 1.pool.ntp.org
-      - 2.pool.ntp.org
-
-sensor:
-  - platform: uptime
-    name: "Uptime"
-    type: timestamp
       
 binary_sensor:
-  - platform: status
-    name: "Status"
-    id: sensor_status
+  - id: !extend sensor_status
     on_press: 
       then:
         - if:
@@ -68,12 +32,6 @@ binary_sensor:
     id: binary_sensor_reset_button
     
 switch:
-  - platform: restart
-    name: "Restart"
-    
-  - platform: safe_mode
-    name: "Restart Safemode"
-  
   - platform: template
     name: "LED"
     id: led_switch
@@ -92,12 +50,13 @@ switch:
         - output.turn_off: power_led
         - output.turn_off: status_led
 
+esp32_ble:
+  max_connections: 4
+
 esp32_ble_tracker:
   scan_parameters:
-    #interval: 1100ms
-    #window: 1100ms
     active: true
-#
+ 
 # The LED is disabled for ESPHome 2023.6.0+ since we do not
 # decode the advertising packets on device anymore, and adding
 # the LED blink would force the device to decode the packets
@@ -113,10 +72,11 @@ esp32_ble_tracker:
             - output.turn_on: bluetooth_led
             - delay: 0.5s
             - output.turn_off: bluetooth_led
-
+            
 bluetooth_proxy:
   active: true
-
+  connection_slots: 4
+  
 # output settings for LED's marked Power and Bluetooth
 # power LED use: see code line 15
 # bluetooth LED use: see code line 60

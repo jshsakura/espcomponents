@@ -9,11 +9,11 @@ from esphome.util import SimpleRegistry
 from .const import CONF_RX_HEADER, CONF_RX_FOOTER, CONF_TX_HEADER, CONF_TX_FOOTER, \
     CONF_RX_CHECKSUM, CONF_TX_CHECKSUM, CONF_RX_CHECKSUM_2, CONF_TX_CHECKSUM_2, \
     CONF_UARTEX_ID, CONF_ERROR, CONF_LOG, CONF_ON_TX_TIMEOUT, CONF_RX_PRIORITY, \
-    CONF_ACK, CONF_ON_WRITE, CONF_ON_READ, \
-    CONF_STATE, CONF_MASK, \
+    CONF_ACK, CONF_ON_WRITE, CONF_ON_READ, CONF_RX_REPLY, CONF_COMMAND, \
+    CONF_STATE, CONF_MASK, CONF_MATCH, \
     CONF_STATE_ON, CONF_STATE_OFF, CONF_COMMAND_ON, CONF_COMMAND_OFF, \
     CONF_COMMAND_UPDATE, CONF_RX_TIMEOUT, CONF_TX_TIMEOUT, CONF_TX_RETRY_CNT, CONF_TX_COMMAND_QUEUE_SIZE, \
-    CONF_STATE_RESPONSE, CONF_LENGTH, CONF_PRECISION, CONF_RX_LENGTH, \
+    CONF_STATE_RESPONSE, CONF_LENGTH, CONF_PRECISION, CONF_RX_LENGTH, CONF_RX_DATA_LENGTH, CONF_ADJUST, \
     CONF_TX_CTRL_PIN, CONF_TX_DELAY, CONF_DISABLED, CONF_ASCII, CONF_SIGNED, CONF_ENDIAN, CONF_DECODE
 
 AUTO_LOAD = ["text_sensor"]
@@ -35,6 +35,7 @@ WriteTrigger = uartex_ns.class_("WriteTrigger", automation.Trigger.template())
 ReadTrigger = uartex_ns.class_("ReadTrigger", automation.Trigger.template())
 
 MULTI_CONF = True
+
 Checksum = uartex_ns.enum("CHECKSUM")
 CHECKSUMS = {
     "NONE": Checksum.CHECKSUM_NONE,
@@ -75,6 +76,17 @@ def validate_decode(value):
         return cv.enum(DECODES, upper=True)(value)
     raise cv.Invalid("data type error")
 
+Match = uartex_ns.enum("MATCH")
+MATCHES = {
+    "PREFIX": Match.MATCH_PREFIX,
+    "EXACT": Match.MATCH_EXACT
+}
+
+def validate_match(value):
+    if isinstance(value, str):
+        return cv.enum(MATCHES, upper=True)(value)
+    raise cv.Invalid("data type error")
+
 Priority = uartex_ns.enum("PRIORITY")
 PRIORITYS = {
     "DATA": Priority.PRIORITY_DATA,
@@ -100,7 +112,8 @@ STATE_SCHEMA = cv.Schema({
     cv.Required(CONF_DATA): validate_hex_data,
     cv.Optional(CONF_MASK, default=[]): validate_hex_data,
     cv.Optional(CONF_OFFSET, default=0): cv.int_range(min=0, max=128),
-    cv.Optional(CONF_INVERTED, default=False): cv.boolean
+    cv.Optional(CONF_INVERTED, default=False): cv.boolean,
+    cv.Optional(CONF_MATCH, default="PREFIX"): validate_match
 })
 
 def shorthand_state(value):
@@ -126,6 +139,17 @@ def header_schema(value):
         return HEADER_SCHEMA(value)
     return shorthand_header(value)
 
+def validate_rx_header(value):
+    if isinstance(value, dict):
+        return [header_schema(value)]
+    if isinstance(value, list):
+        if not value:
+            raise cv.Invalid("rx_header cannot be empty")
+        if isinstance(value[0], (list, dict)):
+            return [header_schema(h) for h in value]
+        return [header_schema(value)]
+    return [header_schema(value)]
+
 COMMAND_SCHEMA = cv.Schema({
     cv.Required(CONF_DATA): validate_hex_data,
     cv.Optional(CONF_ACK, default=[]): validate_hex_data,
@@ -140,6 +164,21 @@ def command_hex_schema(value):
     if isinstance(value, dict):
         return COMMAND_SCHEMA(value)
     return shorthand_command_hex(value)
+
+RX_DATA_LENGTH_SCHEMA = cv.Schema({
+    cv.Required(CONF_OFFSET): cv.int_range(min=0, max=128),
+    cv.Optional(CONF_LENGTH, default=1): cv.int_range(min=1, max=4),
+    cv.Optional(CONF_ENDIAN, default="big"): validate_endian,
+    cv.Optional(CONF_ADJUST, default=0): cv.int_range(min=-128, max=128),
+})
+
+def rx_data_length_schema(value):
+    return RX_DATA_LENGTH_SCHEMA(value)
+
+RX_REPLY_SCHEMA = cv.Schema({
+    cv.Required(CONF_STATE): state_schema,
+    cv.Required(CONF_COMMAND): cv.templatable(command_hex_schema),
+})
 
 # UARTEx Schema
 CONFIG_SCHEMA = cv.All(cv.Schema({
@@ -174,9 +213,11 @@ CONFIG_SCHEMA = cv.All(cv.Schema({
         }
     ),
     cv.Optional(CONF_RX_LENGTH): cv.int_range(min=1, max=256),
+    cv.Optional(CONF_RX_DATA_LENGTH): rx_data_length_schema,
     cv.Optional(CONF_TX_CTRL_PIN): pins.gpio_output_pin_schema,
-    cv.Optional(CONF_RX_HEADER): header_schema,
+    cv.Optional(CONF_RX_HEADER): validate_rx_header,
     cv.Optional(CONF_RX_FOOTER): validate_hex_data,
+    cv.Optional(CONF_RX_REPLY): cv.ensure_list(RX_REPLY_SCHEMA),
     cv.Optional(CONF_TX_HEADER): validate_hex_data,
     cv.Optional(CONF_TX_FOOTER): validate_hex_data,
     cv.Optional(CONF_RX_CHECKSUM): validate_checksum,
@@ -206,7 +247,7 @@ CONFIG_SCHEMA = cv.All(cv.Schema({
         cv.Optional(CONF_DISABLED, default=False): cv.boolean,
         cv.Optional(CONF_ASCII, default=False): cv.boolean,
     }),
-}).extend(cv.COMPONENT_SCHEMA).extend(uart.UART_DEVICE_SCHEMA), cv.has_at_most_one_key(CONF_RX_CHECKSUM, CONF_RX_CHECKSUM_2), cv.has_at_most_one_key(CONF_TX_CHECKSUM, CONF_TX_CHECKSUM_2))
+}).extend(cv.COMPONENT_SCHEMA).extend(uart.UART_DEVICE_SCHEMA), cv.has_at_most_one_key(CONF_RX_LENGTH, CONF_RX_DATA_LENGTH), cv.has_at_most_one_key(CONF_RX_CHECKSUM, CONF_RX_CHECKSUM_2), cv.has_at_most_one_key(CONF_TX_CHECKSUM, CONF_TX_CHECKSUM_2))
 
 async def to_code(config):
     cg.add_global(uartex_ns.using)
@@ -263,13 +304,28 @@ async def to_code(config):
     if CONF_RX_LENGTH in config:
         cg.add(var.set_rx_length(config[CONF_RX_LENGTH]))
 
+    if CONF_RX_DATA_LENGTH in config:
+        conf = config[CONF_RX_DATA_LENGTH]
+        cg.add(var.set_rx_data_length(conf[CONF_OFFSET], conf[CONF_LENGTH], conf[CONF_ENDIAN], conf[CONF_ADJUST]))
+
     if CONF_TX_CTRL_PIN in config:
         tx_ctrl_pin = await cg.gpio_pin_expression(config[CONF_TX_CTRL_PIN])
         cg.add(var.set_tx_ctrl_pin(tx_ctrl_pin))
 
     if CONF_RX_HEADER in config:
-        header = header_hex_expression(config[CONF_RX_HEADER])
-        cg.add(var.set_rx_header(header))
+        for h in config[CONF_RX_HEADER]:
+            header = header_hex_expression(h)
+            cg.add(var.add_rx_header(header))
+
+    for reply in config.get(CONF_RX_REPLY, []):
+        state = state_hex_expression(reply[CONF_STATE])
+        command_conf = reply[CONF_COMMAND]
+        if cg.is_template(command_conf):
+            template_ = await cg.templatable(command_conf, [(uint8_ptr_const, 'data'), (uint16_const, 'len')], cmd_t)
+            cg.add(var.add_rx_reply(state, template_))
+        else:
+            command = command_hex_expression(command_conf)
+            cg.add(var.add_rx_reply(state, command))
 
     if CONF_RX_FOOTER in config:
         cg.add(var.set_rx_footer(config[CONF_RX_FOOTER]))
@@ -283,7 +339,10 @@ async def to_code(config):
     if CONF_RX_CHECKSUM in config:
         data = config[CONF_RX_CHECKSUM]
         if cg.is_template(data):
-            template_ = await cg.templatable(data, [(uint8_ptr_const, 'data'), (uint16_const, 'len')], cg.uint8)
+            template_ = await cg.templatable(data, [
+                (uint8_ptr_const, 'data'), (uint16_const, 'len'),
+                (uint8_ptr_const, 'header'), (uint16_const, 'header_len'),
+            ], cg.uint8)
             cg.add(var.set_rx_checksum(template_))
         else:
             cg.add(var.set_rx_checksum(data))
@@ -403,7 +462,8 @@ def state_hex_expression(conf):
     mask = conf[CONF_MASK]
     offset = conf[CONF_OFFSET]
     inverted = conf[CONF_INVERTED]
-    return state_t(data, mask, offset, inverted)
+    match = conf[CONF_MATCH]
+    return state_t(data, mask, offset, inverted, match)
 
 def state_num_hex_expression(conf):
     if conf is None:
@@ -452,7 +512,7 @@ async def command_string_expression(conf):
     else:
         return command_hex_expression(conf)
 
-@automation.register_action('uartex.write', UARTExWriteAction, cv.maybe_simple_value({
+@automation.register_action('uartex.write', UARTExWriteAction, synchronous=True, schema=cv.maybe_simple_value({
     cv.GenerateID(): cv.use_id(UARTExComponent),
     cv.Required(CONF_DATA): cv.templatable(validate_hex_data),
     cv.Optional(CONF_ACK, default=[]): validate_hex_data,

@@ -1,0 +1,44 @@
+esp8266:
+  board: d1_mini
+  
+switch:
+  - platform: gpio
+    pin:
+      number: D4
+      inverted: true
+    id: builtin_led
+    internal: true
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: D2
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    name: "Button"
+    internal: true 
+    filters:
+      - delayed_on: 20ms
+      - delayed_off: 20ms
+    on_press:
+      - switch.turn_on: builtin_led
+    on_release:
+      - switch.turn_off: builtin_led
+    on_multi_click:
+      - timing:
+          - ON for at most 0.5s
+          - OFF for at least 0.1s
+        then:
+          - homeassistant.event:
+              event: esphome.esp_button
+              data:
+                action: "single"
+      - timing:
+          - ON for at least 0.6s
+        then:
+          - homeassistant.event:
+              event: esphome.esp_button
+              data:
+                action: "hold"

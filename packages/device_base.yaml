@@ -56,7 +56,8 @@ sensor:
   - platform: uptime
     name: "Uptime"
     type: timestamp
-
+    device_class: timestamp
+    
   - platform: wifi_signal
     name: "WiFi signal"
     icon: mdi:wifi-arrow-up-down

@@ -1,9 +1,12 @@
-[![latest version](https://img.shields.io/github/release/eigger/espcomponents?display_name=tag&include_prereleases&label=latest%20version)](https://github.com/eigger/espcomponents/releases)
 # ESPHome external components 
+[![ESPHome External Component](https://img.shields.io/badge/ESPHome-External%20Component-000000?logo=esphome)](https://esphome.io/components/external_components/)
+[![GitHub Release](https://img.shields.io/github/release/eigger/espcomponents.svg)](https://github.com/eigger/espcomponents/releases)
+[![License](https://img.shields.io/github/license/eigger/espcomponents)](https://github.com/eigger/espcomponents/blob/master/LICENSE)
+
 <a href="https://esphome.io/">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://esphome.io/_static/logo-text-on-dark.svg", alt="ESPHome Logo">
-    <img src="https://esphome.io/_static/logo-text-on-light.svg" alt="ESPHome Logo">
+    <source media="(prefers-color-scheme: dark)" srcset="https://media.esphome.io/logo/logo-text-on-dark.svg", alt="ESPHome Logo">
+    <img src="https://media.esphome.io/logo/logo-text-on-light.svg" alt="ESPHome Logo">
   </picture>
 </a>
 
@@ -21,9 +24,25 @@
 
 ---
 
+## [sip_client](/components/sip_client)
+**SIP Voice Call Component**  
+- Registers to a SIP PBX (Asterisk/FreePBX/3CX, etc.) and makes/receives voice calls.
+- Two-way audio via ESPHome's standard `microphone`/`speaker` platforms (G.711 PCMU/PCMA, 8 kHz), with DTMF (RFC 2833).
+- Ready-to-use package for Home Assistant Voice PE: [packages/sip/voice_pe](/packages/sip/voice_pe)
+
+---
+
 ## [jaalee_jht](/components/jaalee_jht)
 **Jaalee JHT Bluetooth Temperature and Humidity Sensor Component**  
 - Supports Jaalee JHT Bluetooth Temperature and Humidity Sensor.
+
+---
+
+## [ble_elm327](/components/ble_elm327)
+**BLE ELM327 OBD-II Reader Component**  
+- Connects to Bluetooth LE ELM327 OBD-II adapters.
+- Exposes vehicle data (RPM, speed, temperature, odometer, gear position, etc.) via robust built-in presets or custom parsing formulas.
+- Fully integrates with standard ESPHome `ble_client` architecture.
 
 ---
 
@@ -48,6 +67,14 @@
 - Product image:  
   <img src="https://cdn.shopify.com/s/files/1/0617/7190/7253/files/T-Keyboard.jpg?v=1708422205" width="200">
   
+---
+
+## [tca8418_keyboard](/components/tca8418_keyboard)
+**TCA8418 Keyboard Component**  
+- Supports TCA8418 I2C keypad scan IC (M5Cardputer ADV keyboard).
+- Product image:  
+  <img src="https://m5stack-doc.oss-cn-shenzhen.aliyuncs.com/1178/Cardputer-Adv_02.webp" width="200">
+
 ---
 
 

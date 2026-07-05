@@ -76,19 +76,16 @@ climate::ClimateTraits UARTExClimate::traits()
     auto traits = climate::ClimateTraits();
     if (this->sensor_ != nullptr || has_state_temperature_current())
     {
-        traits.set_supports_current_temperature(true);
+        traits.add_feature_flags(climate::CLIMATE_SUPPORTS_CURRENT_TEMPERATURE);
     }
     if (has_state_humidity_current())
     {
-        traits.set_supports_current_humidity(true);
+        traits.add_feature_flags(climate::CLIMATE_SUPPORTS_CURRENT_HUMIDITY);
     }
     if (has_state_humidity_target() || get_command_humidity(0))
     {
-        traits.set_supports_target_humidity(true);
+        traits.add_feature_flags(climate::CLIMATE_SUPPORTS_TARGET_HUMIDITY);
     }
-    if (!this->custom_fan_modes_.empty()) traits.set_supported_custom_fan_modes(this->custom_fan_modes_);
-    if (!this->custom_preset_modes_.empty()) traits.set_supported_custom_presets(this->custom_preset_modes_);
-
     if (get_command_cool() || get_state_cool()) traits.add_supported_mode(climate::CLIMATE_MODE_COOL);
     if (get_command_heat() || get_state_heat()) traits.add_supported_mode(climate::CLIMATE_MODE_HEAT);
     if (get_command_fan_only() || get_state_fan_only()) traits.add_supported_mode(climate::CLIMATE_MODE_FAN_ONLY);
@@ -122,10 +119,9 @@ climate::ClimateTraits UARTExClimate::traits()
 
     if (get_state_action_cooling() || get_state_action_heating() || get_state_action_idle() || get_state_action_drying() || get_state_action_fan())
     {
-        traits.set_supports_action(true);
+        traits.add_feature_flags(climate::CLIMATE_SUPPORTS_ACTION);
     }
-
-    traits.set_supports_two_point_target_temperature(false);
+    traits.clear_feature_flags(climate::CLIMATE_SUPPORTS_TWO_POINT_TARGET_TEMPERATURE);
     return traits;
 }
 
@@ -331,18 +327,18 @@ void UARTExClimate::publish(const std::vector<uint8_t>& data)
 
     // custom fan
     optional<std::string> custom_fan = get_state_custom_fan(data);
-    if (custom_fan.has_value() && this->custom_fan_mode.has_value() && this->custom_fan_mode.value() != custom_fan.value())
+    if (custom_fan.has_value() && (this->get_custom_fan_mode() != custom_fan.value()))
     {
-        this->custom_fan_mode = custom_fan.value();
-        changed = true;
+        const char* fan_char = find_mode(custom_fan_modes_, custom_fan.value());
+        if (fan_char != nullptr && this->set_custom_fan_mode_(fan_char)) changed = true;
     }
 
     // custom preset
     optional<std::string> custom_preset = get_state_custom_preset(data);
-    if (custom_preset.has_value() && this->custom_preset.has_value() && this->custom_preset.value() != custom_preset.value())
+    if (custom_preset.has_value() && (this->get_custom_preset() != custom_preset.value()))
     {
-        this->custom_preset = custom_preset.value();
-        changed = true;
+        const char* preset_char = find_mode(custom_preset_modes_, custom_preset.value());
+        if (preset_char != nullptr && this->set_custom_preset_(preset_char)) changed = true;
     }
     
     // Current temperature
@@ -490,22 +486,22 @@ void UARTExClimate::control(const climate::ClimateCall& call)
     }
 
     // custom fan
-    if (call.get_custom_fan_mode().has_value() && this->custom_fan_mode.value() != call.get_custom_fan_mode().value())
+    if (call.has_custom_fan_mode() && (this->get_custom_fan_mode() != call.get_custom_fan_mode()))
     {
-        optional<std::string> custom_fan_mode = call.get_custom_fan_mode().value();
-        if (enqueue_tx_cmd(get_command_custom_fan(custom_fan_mode.value())) || this->optimistic_)
+        StringRef custom_fan_mode = call.get_custom_fan_mode();
+        if (enqueue_tx_cmd(get_command_custom_fan(custom_fan_mode.str())) || this->optimistic_)
         {
-            this->custom_fan_mode = custom_fan_mode;
+            this->set_custom_fan_mode_(custom_fan_mode.c_str());
         }
     }
 
     // custom preset
-    if (call.get_custom_preset().has_value() && this->custom_preset.value() != call.get_custom_preset().value())
+    if (call.has_custom_preset() && (this->get_custom_preset() != call.get_custom_preset()))
     {
-        optional<std::string> custom_preset = call.get_custom_preset().value();
-        if (enqueue_tx_cmd(get_command_custom_preset(custom_preset.value())) || this->optimistic_)
+        StringRef custom_preset = call.get_custom_preset();
+        if (enqueue_tx_cmd(get_command_custom_preset(custom_preset.str())) || this->optimistic_)
         {
-            this->custom_preset = custom_preset;
+            this->set_custom_preset_(custom_preset.c_str());
         }
     }
 

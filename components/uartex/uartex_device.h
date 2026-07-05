@@ -27,6 +27,10 @@ enum DECODE {
     DECODE_ASCII
 };
 
+enum MATCH {
+    MATCH_PREFIX,
+    MATCH_EXACT
+};
 
 struct state_t
 {
@@ -34,13 +38,15 @@ struct state_t
     std::vector<uint8_t> mask;
     uint16_t offset;
     bool inverted;
-    state_t() = default;
+    MATCH match;
+    state_t() : offset(0), inverted(false), match(MATCH_PREFIX) {}
     state_t(
         std::initializer_list<uint8_t> data, 
         std::initializer_list<uint8_t> mask = {}, 
         uint16_t offset = 0, 
-        bool inverted = false)
-    : data(data), mask(mask), offset(offset), inverted(inverted) {}
+        bool inverted = false,
+        MATCH match = MATCH_PREFIX)
+    : data(data), mask(mask), offset(offset), inverted(inverted), match(match) {}
 };
 
 struct state_num_t
@@ -104,6 +110,7 @@ public:
     const cmd_t* dequeue_tx_cmd();
     const cmd_t* dequeue_tx_cmd_low_priority();
     bool parse_data(const std::vector<uint8_t>& data);
+    bool has_last_state() const { return !this->last_state_.empty(); }
     std::vector<uint8_t> last_state();
     uint8_t last_state(const uint16_t index);
 protected:
@@ -143,7 +150,7 @@ protected:
     std::queue<const cmd_t*> tx_cmd_queue_low_priority_{};
     std::vector<uint8_t> last_state_{};
 };
-
+const char* find_mode(const std::vector<const char*>& modes, const std::string& target);
 template<typename KeyType, typename ValueType>
 bool contains(const std::unordered_map<KeyType, ValueType>& map, const KeyType& key) { return map.find(key) != map.end(); }
 bool equal(const std::vector<uint8_t>& data1, const std::vector<uint8_t>& data2,  const uint16_t offset = 0);
