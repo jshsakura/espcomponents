@@ -1080,6 +1080,19 @@ binary_sensor:
     on_release:
       - logger.log: "🚪 현관문이 닫혔습니다!"
 
+text_sensor:
+  # 엘리베이터 상태 (호출/도착) — prugio 월패드가 0x44 상태를 버스에 방송하면 표시됨
+  - platform: uartex
+    name: "Elevator State"
+    icon: "mdi:elevator"
+    state:
+      data: [0x30, 0x00, 0x00, 0x01, 0x00, 0x44, 0x00]
+      mask: [0xff, 0x00, 0xff, 0xff, 0xff, 0xff, 0xff]
+    lambda: |-
+      if (check_value(8, 0x00, data, len)) return "호출";
+      if (check_value(8, 0x03, data, len)) return "도착";
+      return "Unknown";
+
 button:
   # 엘리베이터 호출
   - platform: uartex
