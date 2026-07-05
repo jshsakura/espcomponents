@@ -47,8 +47,8 @@ uartex:
 logger:
   level: DEBUG
   logs:
-    uart_debug: DEBUG
-    uartex: DEBUG
+    uart_debug: VERBOSE
+    uartex: VERBOSE
 
 light:
   # 거실 조명 (Room 0) - 단일 조명
