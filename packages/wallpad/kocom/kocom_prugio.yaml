@@ -45,7 +45,7 @@ uartex:
 
 # 로그 설정 - 디버깅용
 logger:
-  level: DEBUG
+  level: VERBOSE
   logs:
     uart_debug: VERBOSE
     uartex: VERBOSE
